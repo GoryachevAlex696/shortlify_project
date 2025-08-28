@@ -73,7 +73,7 @@ gem 'searchkick'
 
 gem 'faraday'
 
-gem 'ruby-vips', '~> 2.1'
+gem 'ruby-vips', '~> 2.2'
 
 # гемы для api
 
