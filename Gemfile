@@ -65,7 +65,7 @@ end
 
 gem "devise", "~> 4.9"
 
-gem 'mini_magick', '~> 4.11'
+gem 'mini_magick', '~> 5.3'
 
 gem 'active_storage_validations'
 
