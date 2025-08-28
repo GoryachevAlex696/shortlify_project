@@ -1,0 +1,26 @@
+<%# app/views/posts/_post_menu.html.erb %>
+<% if current_user == post.user %>
+  <div class="post-menu-container" data-controller="dropdown">
+    <button class="post-menu-button" data-action="click->dropdown#toggle">
+      <i class="fas fa-ellipsis-v"></i>
+    </button>
+    <div class="post-dropdown hidden" data-dropdown-target="menu">
+      <%= link_to 'Редактировать',
+            edit_post_path(post),
+            data: { 
+              turbo_frame: "modal",
+              turbo: true 
+            },
+            class: "dropdown-item" %>
+
+      <%= button_to "Удалить",
+              post_path(post),
+              method: :delete,
+              class: "dropdown-item delete",
+              data: { 
+                turbo: true,
+                turbo_confirm: "Вы уверены?" 
+              } %>
+    </div>
+  </div>
+<% end %>

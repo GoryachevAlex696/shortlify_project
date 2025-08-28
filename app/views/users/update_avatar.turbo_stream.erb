@@ -1,0 +1,7 @@
+<%# Обновляем аватар в профиле %>
+<%= turbo_stream.replace "user_avatar_#{@user.id}" do %>
+  <%= render "users/avatar", user: @user %>
+<% end %>
+
+<%# Закрываем модальное окно %>
+<%= turbo_stream.remove "editAvatarContainer" %>

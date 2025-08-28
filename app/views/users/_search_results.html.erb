@@ -1,0 +1,22 @@
+<div id="search-results-container">
+  <% if users.any? %>
+    <% users.each do |user| %>
+      <div class="search-user">
+        <div class="avatar">
+          <%= image_tag(user.avatar.attached? ? url_for(user.avatar.variant(resize: "100x100")) : 'default-avatar.png', 
+                     alt: user.username,
+                     loading: :lazy) %>
+        </div>
+        <div class="user-info">
+          <strong><%= user.username.presence || 'Без username' %></strong>
+          <div class="name"><%= user.name.presence || 'Не указано' %></div>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="search-no-results">
+      <i class="fas fa-user-times"></i>
+      <p>Ничего не найдено</p>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,53 @@
+.modal-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.modal-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  border: 1px solid #ddd;
+  background: none;
+  transition: all 0.2s ease;
+}
+
+.modal-option:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.modal-option:active {
+  transform: translateY(0);
+}
+
+.modal-option.upload-option {
+  color: #3897f0;
+  border-color: #3897f0;
+}
+
+.modal-option.delete-option {
+  color: #ff4d4d;
+  border-color: #ff4d4d;
+}
+
+.modal-option.cancel-option {
+  color: #666;
+  border-color: #ddd;
+}
+
+.modal-option i {
+  font-size: 18px;
+  width: 20px;
+  text-align: center;
+}

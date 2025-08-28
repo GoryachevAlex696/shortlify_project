@@ -1,0 +1,62 @@
+<div class="auth-container">
+  <div class="auth-form">
+    <h1 class="auth-title">Shortlify</h1>
+
+    <%= form_for(resource, as: resource_name, 
+                url: registration_path(resource_name),
+                html: { class: "auth-form-content" }) do |f| %>
+      
+      <%= render "devise/shared/error_messages", resource: resource %>
+
+      <!-- Стандартные поля Devise -->
+      <div class="auth-field">
+        <%= f.email_field :email,
+            placeholder: "Email",
+            autocomplete: "email",
+            class: "auth-input",
+            required: true %>
+      </div>
+
+      <!-- Поле для имени и фамилии -->
+      <div class="auth-field">
+        <%= f.text_field :name,
+            placeholder: "Имя и фамилия",
+            autofocus: true,
+            class: "auth-input",
+            required: true %>
+      </div>
+
+      <!-- Поле для имени пользователя -->
+      <div class="auth-field">
+        <%= f.text_field :username,
+            placeholder: "Имя пользователя",
+            class: "auth-input",
+            required: true %>
+      </div>
+
+      <div class="auth-field">
+        <%= f.password_field :password,
+            autocomplete: "new-password",
+            class: "auth-input",
+            placeholder: "Пароль " + (@minimum_password_length ? "(#{@minimum_password_length} символов минимум)" : ""),
+            required: true %>
+      </div>      
+
+      <div class="auth-field">
+        <%= f.password_field :password_confirmation, 
+            placeholder: "Подтверждение пароля",
+            autocomplete: "new-password", 
+            class: "auth-input",
+            required: true %>
+      </div>
+
+      <div class="auth-actions">
+        <%= f.submit "Зарегистрироваться", class: "auth-submit-btn" %>
+      </div>
+    <% end %>
+
+    <div class="auth-links">
+      <%= render "devise/shared/links" %>
+    </div>
+  </div>
+</div>

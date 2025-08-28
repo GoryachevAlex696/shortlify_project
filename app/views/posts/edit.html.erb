@@ -1,0 +1,62 @@
+<turbo-frame id="modal">
+  <div id="editPostContainer" class="modal show" data-controller="modal" data-action="click->modal#clickOutside">
+    <div class="modal-content" data-modal-target="modal" data-action="click->modal#stopPropagation">
+      <div class="modal-header">
+        <h2>Редактировать пост</h2>
+        <button type="button" class="close-btn"
+                data-action="click->modal#close"
+                data-target-id="modal">&times;</button>
+      </div>
+
+      <%= form_with(model: @post, url: post_path(@post), method: :patch,
+                    data: { turbo_frame: "modal" },
+                    html: { multipart: true, class: "post-form" }) do |form| %>
+        <div class="modal-body">
+
+          <div class="form-group">
+            <label for="edit_post_image" class="photo-upload-label" data-controller="image-preview">
+
+              <div class="photo-upload-box">
+                <!-- Иконка камеры (если нет картинки) -->
+                <div class="photo-upload-content <%= 'hidden' if @post.image.attached? %>" data-image-preview-target="content">
+                  <i class="fas fa-camera"></i>
+                  <span>Заменить фото</span>
+                </div>
+
+                <!-- Превью картинки -->
+                <div class="image-preview <%= 'hidden' unless @post.image.attached? %>" data-image-preview-target="preview">
+                  <% if @post.image.attached? %>
+                    <%= image_tag @post.image.variant(resize_to_limit: [600, 600]), alt: "Preview" %>
+                    <button type="button" class="remove-image-btn"
+                            data-action="click->image-preview#clearPreview"
+                            data-image-preview-target="removeBtn">&times;</button>
+                  <% end %>
+                </div>
+              </div>
+
+              <!-- Скрытый инпут -->
+              <%= form.file_field :image, id: "edit_post_image", class: "photo-upload-input",
+                    data: { image_preview_target: "input", action: "change->image-preview#inputChanged" },
+                    direct_upload: true, accept: "image/*" %>
+            </label>
+          </div>
+
+          <div class="form-group">
+            <%= form.label :text, "Описание" %>
+            <%= form.text_area :text,
+                  rows: 3,
+                  class: "edit-textarea",
+                  maxlength: "2200",
+                  oninput: "this.nextElementSibling.textContent = this.value.length + '/2200'" %>
+            <div class="char-counter"><%= @post.text.to_s.length %>/2200</div>
+          </div>
+        </div>
+
+        <div class="modal-footer-two">
+          <%= form.submit "Сохранить изменения", class: "btn save-btn" %>
+          <button type="button" class="btn cancel-btn" data-action="click->modal#close" data-target-id="modal">Отмена</button>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</turbo-frame>

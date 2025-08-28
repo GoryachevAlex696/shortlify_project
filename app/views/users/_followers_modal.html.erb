@@ -1,0 +1,18 @@
+  <div id="followersModal" class="modal hidden" data-modal-target="modal" data-action="click->modal#clickOutside">
+    <div class="modal-content-two">
+      <h3>Подписчики</h3>
+        <div class="modal-body">
+          <% if @user.followers.any? %>
+            <div class="user-list">
+              <% @user.followers.each do |follower| %>
+                <%= render partial: "shared/user_preview", locals: { user: follower } %>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="empty-message">Подписчиков пока нет</p>
+          <% end %>
+        </div>
+      <button class="close-modal" data-action="click->modal#close" data-target-id="followersModal">Закрыть</button>
+    </div>
+  </div>
+

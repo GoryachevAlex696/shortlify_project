@@ -1,0 +1,64 @@
+<turbo-frame id="modal">
+  <div id="editAvatarContainer" class="modal show" data-controller="modal" data-action="click->modal#clickOutside">
+    <div class="modal-content-two" data-action="click->modal#stopPropagation">
+      
+      <div class="modal-header">
+        <h2>Изменить фото профиля</h2>
+        <button type="button" class="close-btn" data-action="click->modal#close">&times;</button>
+      </div>
+
+      <% if local_assigns[:error] %>
+        <div class="alert alert-error">
+          <%= error %>
+        </div>
+      <% end %>
+
+      <%= form_with model: current_user,
+                    url: update_avatar_user_path(current_user),
+                    method: :patch,
+                    html: { multipart: true, class: "avatar-form" } do |f| %>
+        
+        <label class="photo-upload-label" data-controller="image-preview">
+          <div class="photo-upload-box">
+            <div class="photo-upload-content" data-action="click->image-preview#openFileDialog" data-image-preview-target="content">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <span>Загрузить фото</span>
+            </div>
+
+            <div class="image-preview hidden" data-image-preview-target="preview"></div>
+
+            <button type="button" class="remove-image-btn hidden"
+                    data-image-preview-target="removeBtn"
+                    data-action="click->image-preview#clearPreview">
+              &times;
+            </button>
+
+            <%= f.file_field :avatar,
+                  class: "hidden",
+                  accept: "image/*",
+                  data: { 
+                    image_preview_target: "input",
+                    action: "change->image-preview#inputChanged"
+                  } %>
+          </div>
+        </label>
+
+        <div class="modal-footer" style="display: flex; gap: 11px; flex-wrap: wrap; align-items: center; justify-content: space-between; margin-top: 48px;">
+          <div style="display: flex; gap: 10px;">
+            <%= f.submit "Сохранить", class: "btn save-btn" %>
+            
+              <% if current_user.avatar.attached? %>
+                <%= button_to "Удалить текущее фото",
+                              remove_avatar_user_path(current_user),
+                              method: :delete,
+                              class: "btn delete-option",
+                              data: { turbo: true } %>
+              <% end %>
+            
+            <button type="button" class="btn cancel-btn" data-action="click->modal#close">Отмена</button>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</turbo-frame>

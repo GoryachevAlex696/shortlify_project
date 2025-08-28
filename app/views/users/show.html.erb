@@ -1,0 +1,112 @@
+<!-- Общий контейнер для всей страницы профиля -->
+<div class="profile-page-container">
+  <!-- Блок профиля -->
+  <div class="profile-container fixed-top">
+    <div class="profile-header">
+      <div class="profile-avatar-wrapper">
+        <%= render "users/avatar", user: @user %>
+      </div>
+
+      <div class="profile-content">
+        <div class="profile-info">
+          <h1 class="profile-name"><%= @user.name %></h1>
+          <p class="profile-handle"><%= @user.username %></p>
+        </div>
+        
+        <% if current_user == @user %>
+          <div class="profile-actions">
+            <div class="relative" data-controller="dropdown">
+              <button class="settings-btn" data-action="click->dropdown#toggle">
+                <i class="fas fa-cog"></i>
+              </button>
+              
+              <div class="dropdown-menu hidden" data-dropdown-target="menu">
+                <%= button_to "Удалить аккаунт", 
+                            registration_path(current_user), 
+                            method: :delete,
+                            data: { 
+                              turbo_confirm: "Вы уверены, что хотите удалить аккаунт?",
+                              action: "click->dropdown#closeMenu"
+                            },
+                            class: "delete-account-btn" %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Статистика профиля -->
+    <div class="profile-stats">
+      <div class="stat-item">
+        <span class="stat-count"><%= @user.posts.count %></span>
+        <span class="stat-label">публикаций</span>
+      </div>
+
+      <div
+        class="stat-item clickable"
+        data-action="click->modal#open"
+        data-modal-target="trigger"
+        data-target-id="followersModal"
+      >
+        <span class="stat-count"><%= @user.followers.count %></span>
+        <span class="stat-label">подписчиков</span>
+      </div>
+
+      <div
+        class="stat-item clickable"
+        data-action="click->modal#open"
+        data-modal-target="trigger"
+        data-target-id="followingModal"
+      >
+        <span class="stat-count"><%= @user.following.count %></span>
+        <span class="stat-label">подписок</span>
+      </div>
+    </div>
+
+    <% if current_user != @user %>
+      <div class="follow-button">
+        <% if current_user.following?(@user) %>
+          <%= button_to "Отписаться", unfollow_user_path(@user), method: :delete, class: "btn btn-outline-danger" %>
+        <% else %>
+          <%= button_to "Подписаться", follow_user_path(@user), method: :post, class: "btn btn-primary" %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Контейнер для модальных окон и прокрутки -->
+    <%= render "users/followers_modal", user: @user %>
+    <%= render "users/following_modal", user: @user %>
+
+    <!-- Сетка постов с прокруткой в профиле -->
+    <div class="posts-scroll-area-two">
+      <div class="posts-grid-two">
+        <% @user.posts.each do |post| %>
+          <div class="post-item relative group cursor-pointer"
+              data-action="click->modal#open"
+              data-target-id="postModal_<%= post.id %>">
+
+            <% if post.image.attached? %>
+              <%= image_tag post.image.variant(resize_to_limit: [400, 400]),
+                            class: "w-full h-full object-cover" %>
+            <% elsif post.video.attached? %>
+              <video class="w-full h-full object-cover">
+                <source src="<%= url_for(post.video) %>" type="<%= post.video.content_type %>">
+              </video>
+            <% end %>
+
+            <!-- Накладываем эффект при наведении -->
+            <div class="absolute inset-0 bg-black bg-opacity-30 hidden group-hover:flex items-center justify-center text-white font-bold text-lg">
+              Открыть
+            </div>
+          </div>
+
+          <!-- Модальное окно для поста -->
+          <%= render "posts/modal", post: post %>
+        <% end %>
+    </div>
+  </div>
+</div>
+
+<turbo-frame id="modal"></turbo-frame>

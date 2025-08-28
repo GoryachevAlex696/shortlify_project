@@ -1,0 +1,38 @@
+.user-preview {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #4ECDC4;
+}
+
+.user-link-flex {
+  display: flex;
+  text-decoration: none;
+  color: inherit;
+  align-items: center;
+  width: 100%;
+}
+
+.avatar-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10px;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.user-name {
+  font-weight: bold;
+  color: #333;
+}
+
+.user-username {
+  font-size: 0.9em;
+  color: #666;
+}

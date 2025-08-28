@@ -1,0 +1,33 @@
+<div class="reset-container">
+  <div class="reset-form">
+    <h2 class="reset-title">Смените свой пароль</h2>
+
+<%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put }) do |f| %>
+  <%= render "devise/shared/error_messages", resource: resource %>
+  <%= f.hidden_field :reset_password_token %>
+
+      <div class="reset-field">
+        <%= f.password_field :password, 
+              autofocus: true, 
+              autocomplete: "new-password",
+              placeholder: "Новый пароль" + (@minimum_password_length ? " (#{@minimum_password_length} символов минимум)" : ""),
+              class: "auth-input" %>
+      </div>
+
+      <div class="reset-field">
+        <%= f.password_field :password_confirmation, 
+              autocomplete: "new-password",
+              placeholder: "Подтвердите новый пароль",
+              class: "reset-input" %>
+      </div>
+
+      <div class="reset-actions">
+        <%= f.submit "Изменить мой пароль" , class: "reset-submit-btn" %>
+      </div>
+    <% end %>
+
+    <div class="reset-links">
+      <%= render "devise/shared/links" %>
+    </div>
+  </div>
+</div>

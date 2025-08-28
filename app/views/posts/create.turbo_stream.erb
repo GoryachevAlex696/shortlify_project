@@ -1,0 +1,8 @@
+<%# Добавляем новый пост БЕЗ общего контейнера %>
+<%= turbo_stream.prepend "posts" do %>
+  <%= render partial: "posts/post_card", locals: { post: @post, current_user: current_user } %>
+<% end %>
+
+
+<%# Закрываем модальное окно %>
+<%= turbo_stream.remove "newPostContainer" %>

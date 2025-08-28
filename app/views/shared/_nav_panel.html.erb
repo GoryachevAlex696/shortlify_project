@@ -1,0 +1,125 @@
+<div class="nav-panel">
+  <div class="nav-logo">
+    <%= link_to root_path, class: "logo-btn" do %>
+      <i class="fab fa-instagram logo-icon"></i>
+    <% end %>
+  </div>
+  
+  <nav class="nav-menu">
+    <%= link_to root_path, class: "nav-item", title: "Главная" do %>
+      <i class="fas fa-home"></i>
+    <% end %>
+    
+    <!-- Кнопка поиска с выпадающим меню -->
+    <div class="search-container" data-controller="search" data-search-url-value="<%= search_users_path %>" data-search-posts-url-value="<%= search_posts_path %>">
+  <%= link_to "#", class: "nav-item search-trigger", title: "Поиск", data: { action: "click->search#toggleDropdown", turbo: false } do %>
+    <i class="fas fa-search"></i>
+  <% end %>
+
+  <div class="search-dropdown" data-search-target="dropdown">
+    <div class="search-header">
+      <div class="search-title">
+        <h4>Поиск</h4>
+        <small class="search-subtitle">Ищет по именам и username</small>
+      </div>
+      <%= link_to "#", class: "close-search", data: { action: "click->search#closeDropdown" } do %>
+        <i class="fas fa-times"></i>
+      <% end %>
+    </div>
+
+    <div class="search-tabs">
+      <button class="search-tab active" data-action="click->search#switchTab" data-tab="users">
+        <i class="fas fa-user"></i> Люди
+      </button>
+      <button class="search-tab" data-action="click->search#switchTab" data-tab="posts">
+        <i class="fas fa-image"></i> Посты
+      </button>
+    </div>
+
+    <!-- Вкладка поиска пользователей -->
+    <div class="search-content" data-search-target="usersTab">
+      <div class="search-input-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" placeholder="Поиск пользователей..." 
+               data-search-target="usersInput" 
+               data-action="input->search#performUserSearch keydown->search#handleKeydown">
+        <button class="clear-search" data-action="click->search#clearUserSearch">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="search-results-container">
+        <div class="search-results" data-search-target="usersResults">
+          <div class="search-placeholder">
+            <i class="fas fa-search"></i>
+            <p>Начните вводить имя пользователя</p>
+          </div>
+        </div>
+        <div class="search-meta" data-search-target="meta"></div>
+      </div>
+    </div>
+
+    <!-- Вкладка поиска постов -->
+    <div class="search-content hidden" data-search-target="postsTab">
+      <div class="search-input-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" placeholder="Поиск постов..." 
+              data-search-target="postsInput" 
+              data-action="input->search#performPostSearch">
+        <button class="clear-search" data-action="click->search#clearPostSearch">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="search-results-container">
+        <div class="search-results" data-search-target="postsResults">
+          <div class="search-placeholder">
+            <i class="fas fa-search"></i>
+            <p>Начните вводить текст поста</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+    
+   <!-- <%= link_to "#", class: "nav-item", title: "Обзор" do %>
+      <i class="far fa-compass"></i>
+    <% end %>
+    
+    <% if user_signed_in? %>
+      <%= link_to "#", class: "nav-item", title: "Уведомления" do %>
+        <i class="far fa-heart"></i>
+      <% end %> -->
+      
+    <%= link_to profile_path(current_user), class: "nav-item", title: "Профиль" do %>
+      <i class="far fa-user"></i>
+    <% end %>
+
+      <%= link_to new_post_path, 
+            class: "nav-item", 
+            title: "Новая публикация", 
+            data: { turbo_frame: "modal" } do %>
+        <i class="far fa-plus-square"></i>
+      <% end %>
+    <% end %>
+  </nav>
+  
+  <% if user_signed_in? %>
+    <div class="nav-footer">
+      <%= button_to destroy_user_session_path, 
+                   method: :delete,
+                   class: "nav-item logout-btn",
+                   title: "Выйти",
+                   form: { data: { turbo_confirm: "Вы уверены?" } } do %>
+        <i class="fas fa-sign-out-alt"></i>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<%= content_tag :div, "", 
+  id: "click-outside-listener", 
+  class: "click-outside-listener",
+  data: { 
+    controller: "click-outside",
+    action: "click->click-outside#handleClickOutside",
+    search_outside_target: "dropdown" 
+  } %>

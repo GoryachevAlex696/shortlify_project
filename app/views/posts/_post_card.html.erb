@@ -1,0 +1,30 @@
+<turbo-frame id="post_<%= post.id %>" data-updated-at="<%= post.updated_at.to_i %>">
+  <div class="post-card">
+    <div class="post-header">
+      <%= link_to profile_path(post.user.id), class: "post-user-link", data: { turbo_frame: "_top" } do %>
+        <% if post.user.avatar.attached? %>
+          <%= image_tag post.user.avatar.variant(resize_to_fill: [40, 40]), class: "post-avatar" %>
+        <% else %>
+          <%= image_tag asset_path('default_avatar.png'), class: "post-avatar" %>
+        <% end %>
+        <span class="post-username"><%= post.user.username %></span>
+      <% end %>
+
+      <%= render "posts/post_menu", post: post %>
+    </div>
+
+    <% if post.image.attached? %>
+      <div class="post-image-container">
+        <%= image_tag post.image, class: "post-image" %>
+      </div>
+    <% end %>
+
+    <div class="post-caption">
+      <p><%= post.text %></p>
+    </div>
+
+    <div class="post-time">
+      <small><%= post.created_at.strftime("%d.%m.%Y %H:%M") %></small>
+    </div>
+  </div>
+</turbo-frame>

@@ -1,0 +1,65 @@
+<turbo-frame id="modal">
+  <div id="newPostContainer" class="modal show" data-controller="modal" data-action="click->modal#clickOutside">
+    <div class="modal-content" data-modal-target="modal" data-action="click->modal#stopPropagation">
+      <div class="modal-header">
+        <h2>Создание публикации</h2>
+        <button type="button" class="close-btn" data-action="click->modal#close" data-target-id="newPostContainer">&times;</button>
+      </div>
+
+      <%= form_with(model: @post, url: posts_path, method: :post,
+                    data: { turbo: true }, 
+                    html: { multipart: true, class: "post-form" }) do |form| %>
+        <div class="modal-body">
+          <div class="form-group">
+              <label for="post_image" class="photo-upload-label" data-controller="image-preview">
+                
+                <!-- Общий контейнер -->
+                <div class="photo-upload-box">
+                  <!-- Блок с иконкой камеры -->
+                  <div class="photo-upload-content" data-image-preview-target="content">
+                    <i class="fas fa-camera"></i>
+                    <span>Добавить фото</span>
+                  </div>
+
+                  <!-- Превью + крестик удаления -->
+                  <div class="image-preview hidden" data-image-preview-target="preview">
+                    <!-- Кнопка удаления поверх картинки -->
+                    <button type="button" class="remove-image-btn hidden"
+                            data-image-preview-target="removeBtn"
+                            data-action="click->image-preview#clearPreview">
+                      &times;
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Скрытый инпут для выбора файла -->
+                <%= form.file_field :image, id: "post_image", class: "photo-upload-input",
+                      data: { image_preview_target: "input", action: "change->image-preview#inputChanged" },
+                      direct_upload: true, accept: "image/*" %>
+              </label>
+            </div>
+
+          <div class="form-group">
+            <%= form.text_area :text, 
+                  class: "post-text-input",
+                  placeholder: "Напишите что-нибудь...",
+                  maxlength: "2200",
+                  rows: 8,
+                  oninput: "this.nextElementSibling.textContent = this.value.length + '/2200'" %>
+            <div class="char-counter">0/2200</div>
+          </div>
+
+          <div class="modal-footer">
+            <%= form.submit "Опубликовать", 
+                class: "btn btn-primary",
+                data: { 
+                  turbo: true,
+                  disable_with: "Публикуем..." 
+                } %>
+            <button type="button" class="btn cancel-btn" data-action="click->modal#close" data-target-id="newPostContainer">Отмена</button>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</turbo-frame>

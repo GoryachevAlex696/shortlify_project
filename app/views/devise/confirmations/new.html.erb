@@ -1,0 +1,24 @@
+<div class="resend-container">
+  <div class="resend-form">
+    <h2 class="resend-title">Повторная отправка инструкции по подтверждению</h2>
+
+    <%= form_for(resource, as: resource_name, url: confirmation_path(resource_name), html: { method: :post }) do |f| %>
+      <%= render "devise/shared/error_messages", resource: resource %>
+
+      <div class="resend-field">
+        <%= f.email_field :email, 
+              placeholder: "Email", 
+              autofocus: true,
+              class: "resend-input" %>
+      </div>
+
+      <div class="resend-actions">
+        <%= f.submit "Повторно отправить инструкции по подтверждению" , class: "resend-submit-btn" %>
+      </div>
+    <% end %>
+
+    <div class="resend-links">
+      <%= render "devise/shared/links" %>
+    </div>
+  </div>
+</div>

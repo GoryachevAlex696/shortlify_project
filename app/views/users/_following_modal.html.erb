@@ -1,0 +1,19 @@
+<div id="followingModal" class="modal hidden" 
+     data-modal-target="modal"
+     data-action="click->modal#clickOutside">
+  <div class="modal-content-two">
+    <h3>Подписки</h3>
+      <div class="user-list">
+        <% if @user.following.any? %>
+            <div class="user-list">
+              <% @user.following.each do |follower| %>
+              <%= render partial: "shared/user_preview", locals: { user: follower } %>
+              <% end %>
+            </div>
+        <% else %>
+          <p class="empty-message">Подписок пока нет</p>
+        <% end %>
+      </div>
+    <button class="close-modal" data-action="click->modal#close" data-target-id="followingModal">Закрыть</button>
+  </div>
+</div>

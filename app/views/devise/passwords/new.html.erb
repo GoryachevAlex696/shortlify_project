@@ -1,0 +1,24 @@
+<div class="recovery-container">
+  <div class="recovery-form">
+    <h2 class="recovery-title">Забыли пароль?</h2>
+
+    <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
+      <%= render "devise/shared/error_messages", resource: resource %>
+
+      <div class="recovery-field">
+        <%= f.email_field :email, 
+              placeholder: "Email", 
+              autofocus: true,
+              class: "recovery-input" %>
+      </div>
+
+      <div class="recovery-actions">
+        <%= f.submit "Отправьте мне инструкции по сбросу пароля" , class: "auth-submit-btn" %>
+      </div>
+    <% end %>
+
+    <div class="recovery-links">
+      <%= render "devise/shared/links" %>
+    </div>
+  </div>
+</div>

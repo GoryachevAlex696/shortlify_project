@@ -1,0 +1,51 @@
+<div class="page-container">
+  <!-- Кнопки авторизации в правом верхнем углу -->
+  <div class="auth-buttons">
+    <%= link_to "Войти", new_user_session_path, class: "auth-btn" %>
+    <%= link_to "Регистрация", new_user_registration_path, class: "auth-btn" %>
+  </div>
+
+  <!-- Центральный блок с постами -->
+  <div class="posts-center">
+
+    <!-- Заголовок события -->
+    <div class="event-header">
+      <h1><%= @event[:text] if @event %></h1>
+    </div>
+
+    <!-- Описания события -->
+    <div class="event-description">
+      <% @event&.[:descriptions]&.each do |desc| %>
+        <p><%= desc %></p>
+      <% end %>
+    </div>
+
+    <!-- Список постов -->
+    <% @posts&.each do |post| %>
+      <div class="post-card">
+        <div class="post-meta">
+          <span class="post-date"><%= post.event_date.strftime('%d.%m') if post.event_date %></span>
+          <span class="post-time"><%= post.event_time.strftime('%H:%M') if post.event_time %></span>
+        </div>
+
+        <div class="post-content">
+          <h2 class="post-title"><%= post.title %></h2>
+          <% if post.image.attached? %>
+            <%= image_tag post.image, class: "post-image" %>
+          <% end %>
+          <p class="post-text"><%= post.body %></p>
+        </div>
+
+        <div class="post-footer">
+          <span class="post-location"><%= post.location %></span>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Если нет постов -->
+    <% if @posts.blank? %>
+      <p>Пока нет доступных постов.</p>
+    <% end %>
+
+  </div>
+</div>

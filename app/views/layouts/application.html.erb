@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Сообщество</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+
+  <%= stylesheet_link_tag "application", "devise", "posts", "profile", "avatar", "stats", "modal", "buttons", "user_preview",  
+        media: 'all', 
+        'data-turbo-track': 'reload' %>
+
+  <%= javascript_importmap_tags %>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body data-controller="modal">
+<div id="flash"></div>
+  <div class="app-container">
+    <% unless devise_controller? %>  
+      <%= render 'shared/nav_panel' %>
+    <% end %>
+
+    <div class="main-content">
+      <div class="content-wrapper">
+        <%= yield %>
+      </div>
+      <!-- Тонкая линия разделитель -->
+      <hr class="modal-divider-header">
+    </div>
+  </div>
+
+  <!-- Глобальный контейнер для всех модалок -->
+  <turbo-frame id="modal"></turbo-frame>
+</body>
+</html>

@@ -1,0 +1,107 @@
+/* Основные стили */
+.page-container {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Кнопки авторизации */
+.auth-buttons {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.auth-btn {
+  padding: 5px 10px;
+  font-size: 12px;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 3px;
+  border: 1px solid #dbdbdb;
+  background: white;
+  color: #0095f6;
+}
+
+/* Центральный блок */
+.posts-center {
+  max-width: 600px;
+  margin: 0 auto;
+  padding-top: 50px;
+}
+
+.event-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.event-header h1 {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Карточка поста */
+.post-card {
+  margin-bottom: 40px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 15px;
+  position: relative;
+}
+
+.post-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.post-content {
+  text-align: center;
+}
+
+.post-title {
+  font-size: 20px;
+  margin: 10px 0;
+  text-transform: uppercase;
+}
+
+.post-image {
+  max-width: 100%;
+  height: auto;
+  margin: 15px 0;
+  border-radius: 4px;
+}
+
+.post-text {
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 15px 0;
+}
+
+.post-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  font-size: 14px;
+  color: #666;
+}
+
+/* Описание события */
+.event-description {
+  margin-top: 40px;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.event-description p {
+  margin-bottom: 15px;
+}

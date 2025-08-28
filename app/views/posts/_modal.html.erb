@@ -1,0 +1,65 @@
+<div 
+  id="postModal_<%= post.id %>"
+  class="modal"
+  data-controller="modal"
+  data-action="click->modal#clickOutside"
+  aria-hidden="true"
+>
+  <div 
+    class="modal-instagram" 
+    data-action="click->modal#stopPropagation"
+  >
+    <!-- Левая часть: картинка или видео -->
+    <div class="modal-media">
+      <div class="media-container">
+        <% if post.image.attached? %>
+          <%= image_tag post.image, class: "modal-image" %>
+        <% elsif post.video.attached? %>
+          <video controls class="modal-video">
+            <source src="<%= url_for(post.video) %>" type="<%= post.video.content_type %>">
+            Ваш браузер не поддерживает видео.
+          </video>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Правая часть (детали поста) -->
+    <div class="modal-details">
+      <!-- Хедер: аватар + юзер + меню -->
+      <div class="modal-header-row">
+        <div class="flex items-center">
+          <% if post.user.avatar.attached? %>
+            <%= image_tag post.user.avatar, class: "modal-avatar" %>
+          <% else %>
+            <div class="post-avatar bg-gray-300"></div>
+          <% end %>
+          <span class="post-username"><%= post.user.username %></span>
+        </div>
+
+        <%= render "posts/post_menu", post: post %>
+      </div>
+
+      <!-- Тонкая линия -->
+      <hr class="modal-divider">
+
+      <!-- Текст -->
+      <div class="flex-1 overflow-y-auto">
+        <p class="modal-caption"><%= post.text %></p>
+      </div>
+
+      <!-- Футер -->
+      <div class="modal-details">
+        </div>
+        <!-- Футер в самом низу -->
+        <div class="modal-footer-three">
+          <button
+            class="btn cancel-btn"
+            data-action="click->modal#close"
+            data-target-id="postModal_<%= post.id %>"
+          >
+            Закрыть
+          </button>
+      </div>
+    </div>
+  </div>
+</div>

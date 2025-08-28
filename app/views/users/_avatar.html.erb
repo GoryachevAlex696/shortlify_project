@@ -1,0 +1,18 @@
+<div id="user_avatar_<%= user.id %>" class="profile-avatar-wrapper">
+  <% if user.avatar.attached? %>
+    <%= image_tag user.avatar.variant(resize_to_limit: [150, 150]), 
+                  class: "profile-avatar" %>
+  <% else %>
+    <div class="profile-avatar-placeholder">
+      <i class="fas fa-user"></i>
+    </div>
+  <% end %>
+
+  <% if current_user == user %>
+    <%= link_to edit_avatar_user_path(user),
+                data: { turbo_frame: "modal" },
+                class: "avatar-edit-overlay" do %>
+      <i class="fas fa-camera"></i>
+    <% end %>
+  <% end %>
+</div>

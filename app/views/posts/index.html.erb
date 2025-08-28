@@ -1,0 +1,47 @@
+<% if @show_recommendations && current_user.following_ids.empty? %>
+    <div class="recommendations-header">
+      <h2>Добро пожаловать в Shortlify! 👋</h2>
+      <p>Не теряйте времени, заведите новые знакомства! Подпишитесь на интересных авторов:</p>
+    </div>
+<% end %>
+
+<!-- Основной контейнер с прокруткой -->
+<div class="posts-scroll-area">
+  <!-- Основная лента -->
+  <div class="posts-container">
+    <div class="posts-grid grid grid-cols-3 gap-1 mt-6">
+    <div id="posts">
+        <% @posts.each do |post| %>
+          <turbo-frame id="post_<%= post.id %>" data-turbo-cache="false">
+            <%= render partial: "posts/post_card", locals: { post: post, current_user: current_user } %>
+          </turbo-frame>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Блок рекомендаций -->
+  <% if @show_recommendations && @recommended_posts.present? && current_user.following_ids.any? %>
+    <div class="recommendations-section">
+      <h3>Возможно, вам понравится</h3>
+      
+      <div class="posts-container">
+        <div class="posts-grid grid grid-cols-3 gap-1 mt-6">
+          <% @recommended_posts.each do |post| %>
+            <turbo-frame id="recommended_post_<%= post.id %>" data-turbo-cache="false">
+              <%= render partial: "posts/post_card", locals: { post: post, current_user: current_user } %>
+            </turbo-frame>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @show_recommendations && @posts.empty? %>
+    <div class="empty-state">
+      <p>Пока нет ни одного поста для показа</p>
+    </div>
+  <% end %>
+</div>
+
+<turbo-frame id="modal"></turbo-frame>

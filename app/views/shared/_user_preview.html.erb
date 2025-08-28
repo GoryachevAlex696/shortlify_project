@@ -1,0 +1,10 @@
+<div class="user-preview">
+  <%= link_to user_path(user), class: "user-link-flex" do %>
+    <%= image_tag user.avatar.attached? ? url_for(user.avatar) : "default_avatar.png",
+        class: "avatar-small" %>
+    <div class="user-info">
+      <div class="user-name"><%= user.name %></div>
+      <div class="user-username">@<%= user.username %></div>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,576 @@
+/* ====== Общая оболочка модалки ====== */
+/* Базовая модалка */
+.modal {
+  position: fixed;
+  top: 0;
+  left: -18px;
+  width: 102%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 1000;
+}
+
+/* Когда модалка показана */
+.modal.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Скрытая модалка */
+.modal.hidden {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+}
+  
+
+/* ====== Базовый контент (универсальная модалка) ====== */
+.modal-content {
+  background: white;
+  width: 90%;
+  height: 90%;
+  max-width: 400px;
+  max-height: 620px;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+  text-align: center;
+  z-index: 1001;
+  position: relative;
+}
+
+.modal-content-two {
+  background: white;
+  width: 90%;
+  height: 33%;
+  max-width: 400px;
+  max-height: 252px;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+  text-align: center;
+  z-index: 1001;
+  position: relative;
+}
+
+.modal-content h3 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.user-list {
+  list-style: none;
+  padding: 0;
+}
+
+.user-list li {
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.user-link {
+  text-decoration: none;
+  color: #007bff;
+}
+
+.close-modal {
+  margin-top: 20px;
+  background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+  padding: 6px 12px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+/* ====== Модалка редактирования поста ====== */
+.edit-modal {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  width: 600px;
+  max-width: 90%;
+}
+
+.edit-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  color: #333;
+  padding: 0;
+}
+
+.image-preview {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.edit-image {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.edit-textarea {
+  width: 95%;
+  padding: 12px;
+  min-height: 190px; /* Минимум */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  resize: none;
+  font-family: inherit;
+}
+
+.modal-footer {
+  margin-top: 112px; /* Прижимаем к низу */
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.modal-footer-three {
+  margin-top: auto; /* Прижимаем к низу */
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.modal-footer .btn-group {
+  display: flex;
+  gap: 10px;
+}
+
+.modal-footer-two {
+  margin-top: auto; /* Прижимаем к низу */
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 60px;
+}
+
+.cancel-btn {
+  background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+  color: #262626;
+}
+
+.btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+}
+
+.save-btn {
+  background-color: white;
+  color: #4ECDC4;
+}
+
+/* ====== Instagram-style просмотр поста ====== */
+.modal-instagram {
+  display: flex;
+  flex-direction: row;
+  max-width: 900px;
+  max-height: 90vh;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  padding: 0;
+  text-align: left;
+}
+
+/* Левая часть (медиа) */
+.modal-media {
+  flex: 1;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px; /* Минимальная высота */
+  position: relative;
+}
+
+/* Контейнер для медиа с фиксированными пропорциями */
+.media-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 600px; /* Максимальная ширина медиа */
+  max-height: 600px; /* Максимальная высота медиа */
+}
+
+/* Единый стиль для всех медиа */
+.modal-image,
+.modal-video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* Сохраняем пропорции */
+  display: block;
+}
+
+/* Для видео добавляем контрольные элементы */
+.modal-video {
+  background: #000;
+}
+
+/* Соотношение сторон 1:1 для квадратных изображений */
+.modal-media.square-aspect .media-container {
+  aspect-ratio: 1 / 1;
+}
+
+/* Соотношение сторон 4:5 для портретных изображений */
+.modal-media.portrait-aspect .media-container {
+  aspect-ratio: 4 / 5;
+}
+
+/* Соотношение сторон 16:9 для landscape */
+.modal-media.landscape-aspect .media-container {
+  aspect-ratio: 16 / 9;
+}
+
+/* Правая часть (детали поста) */
+.modal-details {
+  width: 350px;
+  min-width: 280px; /* Чуть меньше минимальной ширины */
+  max-width: 400px; /* Добавляем максимальную ширину */
+  max-height: 600px; /* Добавляем максимальную высоту */
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background: white;
+  flex-shrink: 0; /* Запрещаем сжатие */
+}
+
+/* Описание поста */
+.modal-caption {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  word-wrap: break-word;
+  color: #262626;
+}
+
+.modal-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+
+/* Разделитель */
+.modal-divider {
+  border: none;
+  border-top: 1px solid #efefef;
+  margin: 16px 0;
+  flex-shrink: 0;
+}
+
+/* Специфичные стили для аватарок в модалках */
+.modal-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  margin-top: -6px;
+  object-fit: cover;
+  vertical-align: middle;
+  margin-right: 10px;
+}
+
+.modal-username {
+  font-weight: 600;
+  color: #262626;
+  font-size: 14px;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Меню в модалке */
+.modal-menu-container {
+  position: relative;
+}
+
+.modal-menu-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #555;
+}
+
+.modal-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  z-index: 50;
+  min-width: 120px;
+}
+
+.modal-dropdown.hidden {
+  display: none;
+}
+
+.modal-dropdown-item {
+  display: block;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #333;
+  text-decoration: none;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.modal-dropdown-item:hover {
+  background: #f5f5f5;
+}
+
+.modal-dropdown-item.delete {
+  color: #e74c3c;
+}
+
+/* Хедер в модалке просмотра поста */
+.modal-instagram .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 0;
+  border: none;
+}
+
+/* Линия под шапкой */
+.modal-instagram .modal-divider {
+  width: 100%;
+  height: 1px;
+  background-color:  #FF6B6B;
+  margin: 8px 0;
+  border: none;
+}
+
+/* Стили для карточки поста (вне модалок) */
+.post-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  margin-top: 10px;
+  object-fit: cover;
+  vertical-align: middle;
+  margin-right: 10px;
+}
+
+.post-username {
+  font-weight: bold;
+  color: #262626;
+}
+
+.post-menu-container {
+  position: relative;
+}
+
+.post-menu-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #555;
+}
+
+.post-dropdown {
+  position: absolute;
+  top: 25px;
+  right: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  min-width: 120px;
+  z-index: 1100;
+}
+
+.post-dropdown.hidden {
+  display: none;
+}
+
+.post-dropdown-item {
+  display: block;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #262626;
+  text-decoration: none;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.post-dropdown-item:hover {
+  background-color: #f6f6f6;
+}
+
+.post-dropdown-item.delete {
+  color: #d9534f;
+}
+
+.alert-error {
+  color: #dc3545;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+/* ====== ФИКС ДЛЯ МОДАЛОК ====== */
+.modal.show .modal-content {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) !important;
+}
+
+.modal.hidden .modal-content {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Убедимся что модалка всегда поверх всего */
+.modal {
+  z-index: 10000 !important;
+}
+
+.modal-content {
+  z-index: 10001 !important;
+  position: relative !important;
+}
+
+/* Стили для подсчёта символов присоздании нового поста */
+.photo-upload-label {
+  display: block;
+  position: relative;
+  cursor: pointer;
+  text-align: center;
+  width: 100%;
+  min-height: 197px;
+}
+
+.photo-upload-box {
+  position: relative;
+  width: 100%;
+  min-height: 197px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.photo-upload-content {
+  color: #888;
+  font-size: 16px;
+  text-align: center;
+}
+
+.photo-upload-content i {
+  font-size: 32px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.image-preview {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9f9f9;
+}
+
+.image-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.6);
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  line-height: 28px;
+  text-align: center;
+}
+
+.photo-upload-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between; /* Заголовок слева, крестик справа */
+  align-items: center;            /* Выравнивание по вертикали */
+  margin-bottom: 15px;            /* немного отступа вниз */
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+

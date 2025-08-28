@@ -1,0 +1,506 @@
+/* Основные стили формы авторизации*/
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(160deg, #ffd7d7, #a9fafa);
+  padding: 20px;
+}
+
+.auth-form {
+  width: 100%;
+  max-width: 400px;
+  background: white;
+  padding: 40px;
+  margin-left: -80px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.auth-title {
+  font-family: 'Billabong', sans-serif;
+  font-size: 42px;
+  font-weight: 700;
+  color: #000;
+  margin: 0 0 30px 0;
+  letter-spacing: -1px;
+  background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.auth-form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.auth-field label {
+  font-weight: 500;
+  color: #555;
+}
+
+.auth-input {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.auth-input:focus {
+  border-color: #40E0D0;
+  outline: none;
+}
+
+.auth-actions {
+  margin-top: 20px;
+}
+
+.auth-submit-btn {
+  width: 100%;
+  padding: 12px;
+  margin: 15px 0;
+  background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 19px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.5px;
+}
+
+/* Поля ввода */
+.auth-input {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  background: #fafafa;
+  box-sizing: border-box;
+}
+
+.auth-hint {                                               
+  font-size: 12px;                                         
+  color: #888;                                             
+}
+ 
+.auth-input:focus {
+  border-color: #a8a8a8;
+  background: #fff;
+  outline: none;
+}
+
+.auth-submit-btn:hover {
+  background: linear-gradient(45deg, #e55a5a, #3ebbb4);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.auth-links {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.auth-links a {
+  color: #FF6B6B;
+  font-size: 19px;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 5px;
+}
+
+.auth-links a:hover {
+  text-decoration: underline;
+}
+
+/* Разделитель "ИЛИ" */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  color: #888;
+  font-size: 14px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #ddd;
+  margin: 0 10px;
+}
+
+/* Основные стили формы восстановления пароля*/
+.recovery-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(160deg, #fdc8c8, #aff8f8);
+  padding: 20px;
+}
+
+.recovery-form {
+  width: 100%;
+  max-width: 469px;
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.recovery-title {
+  font-family: 'Billabong', sans-serif;
+  font-size: 42px;
+  font-weight: 700;
+  color: #000;
+  margin: 0 0 30px 0;
+  letter-spacing: -1px;
+  background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.recovery-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.recovery-input {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.recovery-input {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  background: #fafafa;
+  box-sizing: border-box;
+}
+
+.recovery-input:focus {
+  border-color: #a8a8a8;
+  background: #fff;
+  outline: none;
+}
+
+.recovery-input:focus {
+  border-color: #40E0D0;
+  outline: none;
+}
+
+.recovery-actions {
+  margin-top: 20px;
+}
+
+.recovery-submit-btn {
+  width: 100%;
+  padding: 12px;
+  margin: 15px 0;
+  background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 19px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.5px;
+}
+
+.recovery-submit-btn:hover {
+  background: linear-gradient(45deg, #e55a5a, #3ebbb4);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.recovery-links {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.recovery-links a {
+  color: #FF6B6B;
+  font-size: 19px;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 5px;
+}
+
+/* Основные стили отправки инструкции по подтверждению*/
+.resend-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(160deg, #fdc8c8, #aff8f8);
+  padding: 20px;
+}
+
+.resend-form {
+  width: 100%;
+  max-width: 541px;
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.resend-title {
+  font-family: 'Billabong', sans-serif;
+  font-size: 42px;
+  font-weight: 700;
+  color: #000;
+  margin: 0 0 30px 0;
+  letter-spacing: -1px;
+  background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.resend-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.resend-input {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.resend-input {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  background: #fafafa;
+  box-sizing: border-box;
+}
+
+.resend-input:focus {
+  border-color: #a8a8a8;
+  background: #fff;
+  outline: none;
+}
+
+.resend-input:focus {
+  border-color: #40E0D0;
+  outline: none;
+}
+
+.resend-actions {
+  margin-top: 20px;
+}
+
+.resend-submit-btn {
+  width: 100%;
+  padding: 12px;
+  margin: 15px 0;
+  background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 19px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.5px;
+}
+
+.resend-submit-btn:hover {
+  background: linear-gradient(45deg, #e55a5a, #3ebbb4);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.resend-links {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.resend-links a {
+  color: #FF6B6B;
+  font-size: 19px;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 5px;
+}
+
+/* Основные стили сброса пароля*/
+.reset-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(160deg, #fdc8c8, #aff8f8);
+  padding: 20px;
+}
+
+.reset-form {
+  width: 100%;
+  max-width: 541px;
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.reset-title {
+  font-family: 'Billabong', sans-serif;
+  font-size: 42px;
+  font-weight: 700;
+  color: #000;
+  margin: 0 0 30px 0;
+  letter-spacing: -1px;
+  background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.reset-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.reset-input {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.reset-input {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  background: #fafafa;
+  box-sizing: border-box;
+}
+
+.reset-input:focus {
+  border-color: #a8a8a8;
+  background: #fff;
+  outline: none;
+}
+
+.reset-input:focus {
+  border-color: #40E0D0;
+  outline: none;
+}
+
+.reset-actions {
+  margin-top: 20px;
+}
+
+.reset-submit-btn {
+  width: 100%;
+  padding: 12px;
+  margin: 15px 0;
+  background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 19px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.5px;
+}
+
+.reset-submit-btn:hover {
+  background: linear-gradient(45deg, #e55a5a, #3ebbb4);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.reset-links {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.reset-links a {
+  color: #FF6B6B;
+  font-size: 19px;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 5px;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 576px) {
+  .auth-form,
+  .recovery-form,
+  .resend-form,
+  .reset-form {
+    padding: 30px 20px;
+    margin: 0 15px;
+  }
+  
+  .auth-title,
+  .recovery-title,
+  .resend-title,
+  .reset-title {
+    font-size: 36px;
+  }
+  
+  .auth-input,
+  .recovery-input,
+  .resend-input,
+  .reset-input {
+    font-size: 16px;
+  }
+  
+  .auth-submit-btn,
+  .recovery-submit-btn,
+  .resend-submit-btn,
+  .reset-submit-btn {
+    font-size: 17px;
+  }
+}

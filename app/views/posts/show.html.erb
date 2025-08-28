@@ -1,0 +1,6 @@
+<!-- app/views/posts/show.html.erb -->
+<div class="post">
+  <h2><%= @post.image %></h2>
+  <p><%= @post.text %></p>
+  <small>Создано: <%= l(@post.created_at, format: :long) %></small>
+</div>

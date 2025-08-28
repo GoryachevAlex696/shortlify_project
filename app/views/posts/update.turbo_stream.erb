@@ -1,0 +1,13 @@
+<turbo-stream action="update" target="post_<%= @post.id %>">
+  <template>
+    <%= tag.div data: { updated_at: Time.current.to_i } do %>
+      <%= render partial: "posts/post_card", locals: { post: @post, current_user: current_user }, formats: [:html] %>
+    <% end %>
+  </template>
+</turbo-stream>
+
+<turbo-stream action="update" target="modal">
+  <template>
+    <!-- очистка модального окна -->
+  </template>
+</turbo-stream>
