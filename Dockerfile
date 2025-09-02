@@ -33,7 +33,7 @@ COPY . .
 
 # Компиляция
 RUN bundle exec bootsnap precompile app/ lib/
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
+RUN SECRET_KEY_BASE_DUMMY=1 bundle exec rails assets:precompile
 
 # Создаём пользователя
 RUN groupadd --system --gid 1000 app && \
