@@ -5,6 +5,9 @@ class Post < ApplicationRecord
   validates :image, presence: true
   validates :text, presence: true
   
+  # SCOPE для получения постов от других пользователей
+  scope :from_other_users, ->(user) { where.not(user_id: user.id) }
+
   # Метод для получения ленты (для текущего пользователя или всех)
   def self.feed_for(user)
     user ? all : where(public: true) # Или ваша логика фильтрации

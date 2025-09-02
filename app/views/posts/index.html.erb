@@ -1,7 +1,9 @@
 <% if @show_recommendations && current_user.following_ids.empty? %>
     <div class="recommendations-header">
       <h2>Добро пожаловать в Shortlify! 👋</h2>
-      <p>Не теряйте времени, заведите новые знакомства! Подпишитесь на интересных авторов:</p>
+      <% if Post.from_other_users(current_user).exists? %>
+        <p>Не теряйте времени, заведите новые знакомства! Подпишитесь на интересных авторов:</p>
+      <% end %>
     </div>
 <% end %>
 
@@ -37,9 +39,9 @@
     </div>
   <% end %>
 
-  <% if @show_recommendations && @posts.empty? %>
+  <% if @show_recommendations && Post.from_other_users(current_user).none? %>
     <div class="empty-state">
-      <p>Пока нет ни одного поста для показа</p>
+      <p>Интересные рекомендации появятся позже!</p>
     </div>
   <% end %>
 </div>

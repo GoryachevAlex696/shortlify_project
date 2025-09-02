@@ -1,24 +1,57 @@
-# README
+# Shortlify
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Rails 8.0 приложение с MySQL, готовое к запуску через Docker Compose.
 
-Things you may want to cover:
+---
 
-* Ruby version
+## Быстрый старт
 
-* System dependencies
+1. Клонировать репозиторий и перейти в папку проекта:
+```bash
+git clone https://github.com/goryachevalex969/shortlify.git
+cd shortlify
+```
 
-* Configuration
+2. Собрать и запустить контейнеры:
+```bash
+docker compose up --build
+```
 
-* Database creation
+3. Приложение доступно на:
+```
+http://localhost:3000
+```
 
-* Database initialization
+---
 
-* How to run the test suite
+## Работа с контейнерами
 
-* Services (job queues, cache servers, search engines, etc.)
+- Остановить контейнеры:
+```bash
+docker compose down
+```
 
-* Deployment instructions
+- Открыть bash в контейнере Rails:
+```bash
+docker compose exec app bash
+```
 
-* ...
+- Rails консоль:
+```bash
+docker compose exec app ./bin/rails c
+```
+
+---
+
+## Особенности
+
+- Код проекта смонтирован через volume, изменения вступают в силу без пересборки образа.  
+- MySQL хранит данные в volume `db_data` — данные сохраняются при пересборке.  
+- Bundler кешируется в volume `bundle_cache`.  
+- Rails запускается с пользователем `app`.  
+- Образ можно загрузить на Docker Hub:
+```bash
+docker tag shortlify_app goryachevalex969/shortlify:v1.0
+docker push goryachevalex969/shortlify:v1.0
+```
+

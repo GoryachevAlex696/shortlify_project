@@ -7,40 +7,19 @@
 #   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
-# Убедитесь, что есть пользователь
-# Убедимся, что есть пользователь
-# Проверяем и создаем пользователя
-# Убедимся, что есть пользователь
-user = User.first || User.create!(
-  email: 'admin@example.com',
-  password: 'password',
-  username: 'admin'
-)
+# Создаём админа, если его ещё нет
+admin = User.find_or_initialize_by(email: "admin@example.com")
 
-# Путь к тестовому изображению (положите файл в указанную папку)
-image_path = Rails.root.join('app', 'assets', 'images', 'linkin_park.jpg')
-
-# Создаем пост с ВСЕМИ обязательными полями
-post = Post.new(
-  title: "Концерт SYSTEM OF A DOWN",
-  body: "Город Open! Орловчане",
-  #event_date: Date.today + 7.days, # Дата через неделю
-  #event_time: Time.now.change(hour: 19, min: 0), # 19:00
-  location: "PARK",
-  author_name: "Редакция",
-  user: user
-)
-
-# Прикрепляем изображение
-if File.exist?(image_path)
-  post.image.attach(
-    io: File.open(image_path),
-    filename: 'linkin_park.jpg',
-    content_type: 'image/jpg'
-  )
+if admin.new_record?
+  admin.name = "Admin"
+  admin.username = "admin"
+  admin.password = "password"
+  admin.password_confirmation = "password"
+  admin.skip_confirmation!   
+  admin.save!
+  puts "Администратор создан: #{admin.email} / #{admin.password}"
 else
-  puts "Файл изображения не найден по пути: #{image_path}"
-  puts "Создаю пост без изображения (отключите валидацию, если нужно)"
+  puts "Администратор уже существует: #{admin.email}"
 end
 
-post.save!
+
