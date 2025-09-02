@@ -51,7 +51,7 @@ docker compose exec app ./bin/rails c
 - Rails запускается с пользователем `app`.  
 - Образ можно загрузить на Docker Hub:
 ```bash
-docker tag shortlify_app goryachevalex969/shortlify:v1.0
-docker push goryachevalex969/shortlify:v1.0
+docker tag shortlify-app goryachevalex969/shortlify_project:v1.0
+docker push goryachevalex969/shortlify_project:v1.0
 ```
 
