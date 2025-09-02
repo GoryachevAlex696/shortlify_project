@@ -8,8 +8,8 @@ Rails 8.0 приложение с MySQL, готовое к запуску чер
 
 1. Клонировать репозиторий и перейти в папку проекта:
 ```bash
-git clone https://github.com/goryachevalex969/shortlify.git
-cd shortlify
+git clone git clone https://github.com/GoryachevAlex696/shortlify_project.git
+cd shortlify_project
 ```
 
 2. Собрать и запустить контейнеры:
