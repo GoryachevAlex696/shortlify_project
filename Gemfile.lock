@@ -114,9 +114,6 @@ GEM
     connection_pool (2.5.3)
     crass (1.0.6)
     date (3.4.1)
-    debug (1.10.0)
-      irb (~> 1.10)
-      reline (>= 0.3.8)
     devise (4.9.4)
       bcrypt (~> 3.0)
       orm_adapter (~> 0.1)
@@ -165,8 +162,6 @@ GEM
       addressable (~> 2.8)
       bigdecimal (~> 3.1)
     jsonapi-renderer (0.2.2)
-    jsonapi-serializer (2.2.0)
-      activesupport (>= 4.2)
     jwt (3.1.2)
       base64
     kamal (2.6.1)
@@ -242,7 +237,7 @@ GEM
       date
       stringio
     public_suffix (6.0.2)
-    puma (6.6.0)
+    puma (7.0.0)
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.8.1)
@@ -424,13 +419,11 @@ DEPENDENCIES
   bootsnap
   brakeman
   capybara
-  debug
   devise (~> 4.9)
   faraday
   image_processing (~> 1.2)
   importmap-rails
   jbuilder
-  jsonapi-serializer
   jwt
   kamal
   letter_opener
