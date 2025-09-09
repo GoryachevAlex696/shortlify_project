@@ -10,6 +10,7 @@ WORKDIR /rails
 RUN sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources && \
     sed -i 's|http://security.debian.org|https://security.debian.org|g' /etc/apt/sources.list.d/debian.sources
 
+# установка зависимостей
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y \
         libvips \
@@ -17,9 +18,10 @@ RUN apt-get update -qq && \
         pkg-config && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/archives
 
-# Переменные окружения
-ENV RAILS_ENV=production \
-    BUNDLE_PATH=/usr/local/bundle
+# Переменные окружения для development
+ENV RAILS_ENV=development \
+    BUNDLE_PATH=/usr/local/bundle \ 
+    BUNDLE_WITHOUT="" 
 
 # Копируем и устанавливаем зависимости приложения
 COPY Gemfile Gemfile.lock ./
