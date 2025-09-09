@@ -36,6 +36,10 @@ end
    end
    root to: redirect('users/sign_in')
 
+   # для автоматизации подтверждения почты в development
+   if Rails.env.development?
+      mount LetterOpenerWeb::Engine, at: "/letter_opener"
+   end
   # ==================== API ROUTES ====================
 namespace :api, defaults: { format: :json } do
   namespace :v1 do

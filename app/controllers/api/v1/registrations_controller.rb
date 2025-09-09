@@ -6,21 +6,19 @@ class Api::V1::RegistrationsController < Api::V1::BaseController
     user = User.new(user_params)
     
     if user.save
-      # Генерируем JWT токен
-      payload = { user_id: user.id }
-      token = JWT.encode(payload, Rails.application.secret_key_base, 'HS256')
-        
-      render json: {
-        status: :success,
-        message: 'Регистрация успешно завершена',
-        user: UserSerializer.new(user).as_json,
-        token: token
-      }, status: :created
+      if user.confirmed?
+        # когда пользователь уже подтвержден 
+        token = JWT.encode({ user_id: user.id }, Rails.application.secret_key_base, 'HS256')
+        render json: { status: :success, user: UserSerializer.new(user), token: token }, status: :created
+      else
+        # пользователь создан, но не подтвержден
+        render json: {
+          status: :success,
+          message: "Регистрация завершена. Проверьте email для подтверждения."
+        }, status: :created
+      end
     else
-      render json: {
-        status: :error,
-        errors: user.errors.full_messages
-      }, status: :unprocessable_entity
+      render json: { status: :error, errors: user.errors.full_messages }, status: :unprocessable_entity
     end
   end
 

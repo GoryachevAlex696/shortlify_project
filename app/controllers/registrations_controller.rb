@@ -24,4 +24,22 @@ class RegistrationsController < Devise::RegistrationsController
   def after_sign_out_path_for(resource)
     root_path
   end
+
+  def after_inactive_sign_up_path_for(resource)
+    if Rails.env.development?
+      letters_path = Rails.root.join("tmp", "letter_opener")
+      letters = Dir.glob("#{letters_path}/*").sort
+      last_letter_dir = letters.last
+
+      if last_letter_dir
+        last_letter_id = File.basename(last_letter_dir)
+        # формируем путь к конкретному письму необходимого для подтверждения Email
+        "/letter_opener/#{last_letter_id}"
+      else
+        "/letter_opener"
+      end
+    else
+      super
+    end
+  end
 end

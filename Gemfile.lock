@@ -114,9 +114,6 @@ GEM
     connection_pool (2.5.3)
     crass (1.0.6)
     date (3.4.1)
-    debug (1.10.0)
-      irb (~> 1.10)
-      reline (>= 0.3.8)
     devise (4.9.4)
       bcrypt (~> 3.0)
       orm_adapter (~> 0.1)
@@ -165,8 +162,6 @@ GEM
       addressable (~> 2.8)
       bigdecimal (~> 3.1)
     jsonapi-renderer (0.2.2)
-    jsonapi-serializer (2.2.0)
-      activesupport (>= 4.2)
     jwt (3.1.2)
       base64
     kamal (2.6.1)
@@ -187,6 +182,11 @@ GEM
       logger (~> 1.6)
     letter_opener (1.10.0)
       launchy (>= 2.2, < 4)
+    letter_opener_web (2.0.0)
+      actionmailer (>= 5.2)
+      letter_opener (~> 1.7)
+      railties (>= 5.2)
+      rexml
     lint_roller (1.1.0)
     logger (1.7.0)
     loofah (2.24.1)
@@ -340,10 +340,6 @@ GEM
       rack (>= 1.1)
       rubocop (>= 1.75.0, < 2.0)
       rubocop-ast (>= 1.44.0, < 2.0)
-    rubocop-rails-omakase (1.1.0)
-      rubocop (>= 1.72)
-      rubocop-performance (>= 1.24)
-      rubocop-rails (>= 2.30)
     ruby-progressbar (1.13.0)
     ruby-vips (2.2.4)
       ffi (~> 1.12)
@@ -420,20 +416,19 @@ PLATFORMS
 DEPENDENCIES
   active_model_serializers
   active_storage_validations
-  bcrypt
+  bcrypt (~> 3.1.7)
   bootsnap
   brakeman
   capybara
-  debug
   devise (~> 4.9)
   faraday
   image_processing (~> 1.2)
   importmap-rails
   jbuilder
-  jsonapi-serializer
   jwt
   kamal
-  letter_opener
+  letter_opener (~> 1.8)
+  letter_opener_web (~> 2.0)
   mini_magick (~> 4.11)
   mysql2 (~> 0.5)
   propshaft
@@ -441,7 +436,9 @@ DEPENDENCIES
   rack-cors
   rails (~> 8.0.2)
   rswag
-  rubocop-rails-omakase
+  rubocop
+  rubocop-performance
+  rubocop-rails
   ruby-vips (~> 2.1)
   searchkick
   selenium-webdriver

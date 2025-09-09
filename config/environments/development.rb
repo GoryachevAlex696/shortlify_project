@@ -3,10 +3,12 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
-  config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }  
-
-config.action_mailer.delivery_method = :letter_opener
-config.action_mailer.perform_deliveries = true
+  # настройка отправки писаем
+  config.action_mailer.delivery_method = :letter_opener_web
+  config.action_mailer.perform_deliveries = true
+  config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
+  # Папка, где сохраняются письма
+  # config.action_mailer.letter_opener_settings = { location: Rails.root.join('tmp', 'letters') }
 
   # Make code changes take effect immediately without server restart.
   config.enable_reloading = true

@@ -24,7 +24,8 @@ services:
     command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails db:prepare && bundle exec rails s -b 0.0.0.0 -p 3000"
     volumes:
       - .:/rails
-      - bundle_cache:/usr/local/bundle 
+      - bundle_cache:/usr/local/bundle
+      - ./tmp/letters:/app/tmp/letters
     ports:
       - "3000:3000"
     depends_on:
@@ -33,6 +34,7 @@ services:
     environment:
       RAILS_ENV: development
       DATABASE_URL: mysql2://shortlify:password@db:3306/shortlify_development
+      BUNDLE_WITHOUT: ""  
 
 volumes:
   db_data:
