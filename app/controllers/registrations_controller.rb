@@ -31,7 +31,7 @@ class RegistrationsController < Devise::RegistrationsController
       letters = Dir.glob("#{letters_path}/*").sort
       last_letter_dir = letters.last
 
-      if last_letter_dir
+      if last_letter_dir  
         last_letter_id = File.basename(last_letter_dir)
         # формируем путь к конкретному письму необходимого для подтверждения Email
         "/letter_opener/#{last_letter_id}"

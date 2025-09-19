@@ -1,9 +1,9 @@
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins '*' 
+    origins 'localhost:3001'# конкретный домен
     resource '*',
       headers: :any,
       methods: [:get, :post, :put, :patch, :delete, :options, :head],
-      expose: ['Authorization']
+      credentials: true 
   end
 end

@@ -43,10 +43,6 @@ end
   # ==================== API ROUTES ====================
 namespace :api, defaults: { format: :json } do
   namespace :v1 do
-    # Авторизация (оставляем как есть)
-    # post 'auth/login', to: 'authentication#login'
-    # post 'auth/register', to: 'authentication#register'
-    # delete 'auth/logout', to: 'authentication#logout'
 
     # Регистрация
     post 'signup', to: 'registrations#create'
