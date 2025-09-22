@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { Post } from '@/lib/api';
-import { useState, useRef, useEffect } from 'react';
-import { useImageWithAuth } from '@/hooks/useImageWithAuth';
-import { MoreHorizontal, Edit, Trash2, ImageIcon } from 'lucide-react';
-import Link from 'next/link';
+import { Post } from "@/lib/api";
+import { useState, useRef, useEffect } from "react";
+import { useImageWithAuth } from "@/hooks/useImageWithAuth";
+import { MoreHorizontal, Edit, Trash2, ImageIcon } from "lucide-react";
+import Link from "next/link";
 
 interface PostCardProps {
   post: Post;
@@ -14,12 +14,22 @@ interface PostCardProps {
   id?: string;
 }
 
-export function PostCard({ post, onEdit, onDelete, currentUserId, id }: PostCardProps) {
+export function PostCard({
+  post,
+  onEdit,
+  onDelete,
+  currentUserId,
+  id,
+}: PostCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  
-  const { blobUrl, loading: imageLoading, error: imageError } = useImageWithAuth(post.image_url);
+
+  const {
+    blobUrl,
+    loading: imageLoading,
+    error: imageError,
+  } = useImageWithAuth(post.image_url);
 
   // Закрытие меню при клике вне его
   useEffect(() => {
@@ -29,21 +39,26 @@ export function PostCard({ post, onEdit, onDelete, currentUserId, id }: PostCard
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Функция для преобразования относительного URL в абсолютный
   const getAbsoluteImageUrl = (url: string | undefined): string => {
-    if (!url) return '';
-    
-    if (url.startsWith('http')) return url;
-    
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
-                   process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 
-                   'http://localhost:3000';
-    
-    return `${baseUrl}${url}`;
+    if (!url) return "";
+
+    // Если URL уже абсолютный, возвращаем как есть
+    if (url.startsWith("http")) return url;
+
+    // Используем API URL (бэкенд) для изображений
+    const baseUrl =
+      process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") ||
+      "http://localhost:3000";
+
+    // Убедимся, что относительный URL начинается с /
+    const relativeUrl = url.startsWith("/") ? url : `/${url}`;
+
+    return `${baseUrl}${relativeUrl}`;
   };
 
   const handleEdit = () => {
@@ -53,7 +68,7 @@ export function PostCard({ post, onEdit, onDelete, currentUserId, id }: PostCard
 
   const handleDelete = () => {
     setIsMenuOpen(false);
-    if (confirm('Вы уверены, что хотите удалить этот пост?')) {
+    if (confirm("Вы уверены, что хотите удалить этот пост?")) {
       onDelete?.(post.id);
     }
   };
@@ -63,29 +78,36 @@ export function PostCard({ post, onEdit, onDelete, currentUserId, id }: PostCard
   };
 
   const handleAvatarError = () => {
-    console.error('Failed to load avatar:', post.user?.avatar_url);
+    console.error("Failed to load avatar:", post.user?.avatar_url);
     setAvatarError(true);
   };
 
   // Проверяем, автор ли текущий пользователь поста
-  const isCurrentUserAuthor = currentUserId && String(post.user?.id) === currentUserId;
+  const isCurrentUserAuthor =
+    currentUserId && String(post.user?.id) === currentUserId;
 
   const author = post.user || {
-    name: 'Неизвестный автор',
-    username: 'unknown',
-    avatar_url: undefined
+    name: "Неизвестный автор",
+    username: "unknown",
+    avatar_url: undefined,
   };
 
   const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="%23e5e7eb"/><text x="20" y="26" text-anchor="middle" fill="%236b7280" font-size="16">👤</text></svg>`;
 
-  const avatarSrc = avatarError || !author.avatar_url ? defaultAvatar : getAbsoluteImageUrl(author.avatar_url);
+  const avatarSrc =
+    avatarError || !author.avatar_url
+      ? defaultAvatar
+      : getAbsoluteImageUrl(author.avatar_url);
 
   return (
-    <div id={id} className="bg-white rounded-xl p-5 mb-4 shadow-card border border-gray-100">
+    <div
+      id={id}
+      className="bg-white rounded-xl p-5 mb-4 shadow-card border border-gray-100"
+    >
       {/* Header with author info */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-start space-x-3">
-          <Link 
+          <Link
             href={`/profile/${author.username}`}
             className="hover:opacity-80 transition-opacity"
           >
@@ -97,13 +119,15 @@ export function PostCard({ post, onEdit, onDelete, currentUserId, id }: PostCard
             />
           </Link>
           <div className="flex-1 min-w-0">
-            <Link 
+            <Link
               href={`/profile/${author.username}`}
               className="hover:opacity-80 transition-opacity"
             >
-              <h3 className="font-semibold text-gray-900 text-base mb-1">{author.name}</h3>
+              <h3 className="font-semibold text-gray-900 text-base mb-1">
+                {author.name}
+              </h3>
             </Link>
-            {author.name !== 'Неизвестный автор' && (
+            {author.name !== "Неизвестный автор" && (
               <p className="text-xs text-gray-500">@{author.username}</p>
             )}
           </div>
@@ -166,20 +190,20 @@ export function PostCard({ post, onEdit, onDelete, currentUserId, id }: PostCard
                 alt="Изображение поста"
                 className="max-w-full max-h-96 object-contain rounded-lg"
                 style={{
-                  width: 'auto',
-                  height: 'auto'
+                  width: "auto",
+                  height: "auto",
                 }}
                 onLoad={(e) => {
                   // Автоматическая подстройка размера
                   const img = e.target as HTMLImageElement;
                   if (img.naturalWidth > img.naturalHeight) {
                     // Горизонтальное изображение
-                    img.classList.add('max-w-full');
-                    img.classList.remove('max-h-96');
+                    img.classList.add("max-w-full");
+                    img.classList.remove("max-h-96");
                   } else {
                     // Вертикальное изображение
-                    img.classList.add('max-h-96');
-                    img.classList.remove('max-w-full');
+                    img.classList.add("max-h-96");
+                    img.classList.remove("max-w-full");
                   }
                 }}
               />
@@ -188,7 +212,9 @@ export function PostCard({ post, onEdit, onDelete, currentUserId, id }: PostCard
             <div className="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center">
               <div className="text-center">
                 <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-500">Не удалось загрузить изображение</p>
+                <p className="text-sm text-gray-500">
+                  Не удалось загрузить изображение
+                </p>
               </div>
             </div>
           )}

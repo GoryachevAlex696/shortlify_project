@@ -144,7 +144,7 @@ export default function ProfilePage() {
     console.log("Current user ID:", currentUser?.id);
     
     // Проверяем токен
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('authToken');
     console.log("Auth token exists:", !!token);
     
     return await usersAPI.removeUser(profileData!.id);

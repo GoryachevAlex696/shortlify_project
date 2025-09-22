@@ -89,19 +89,15 @@ class Api::V1::UsersController < Api::V1::BaseController
 
   # DELETE /api/v1/users/:id
   def destroy
-    if @user == current_user
-      current_user.posts.destroy_all if current_user.posts.any?
-      current_user.avatar.purge if current_user.avatar.attached?
+    current_user.posts.destroy_all if current_user.posts.any?
+    current_user.avatar.purge if current_user.avatar.attached?
 
-      if current_user.destroy
-        render json: { status: :success, message: 'Аккаунт успешно удален' }, status: :ok
-      else
-        render json: { status: :error, errors: current_user.errors.full_messages }, status: :unprocessable_entity
-      end
+    if current_user.destroy
+      render json: { status: :success, message: 'Аккаунт успешно удален' }, status: :ok
     else
-      render json: { status: :error, error: 'Можно удалить только свой аккаунт' }, status: :forbidden
+      render json: { status: :error, errors: current_user.errors.full_messages }, status: :unprocessable_entity
     end
-  end
+end
 
   private
 

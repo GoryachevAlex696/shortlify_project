@@ -232,9 +232,16 @@ export const usersAPI = {
   },
 
   removeUser: async (id: string): Promise<UserProfile> => {
+  try {
+    console.log("Deleting user with ID:", id);
     const response = await api.delete(`/users/${id}`);
+    console.log("Delete response:", response.status);
     return unwrapData(response);
-  },
+  } catch (error) {
+    console.error("Delete user error:", error);
+    throw error;
+  }
+},
   
   removeAvatar: async (id: string): Promise<{ message: string }> => {
     const response = await api.delete(`/users/${id}/avatar`);

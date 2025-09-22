@@ -7,10 +7,11 @@ import { CreatePost } from "@/components/Post/CreatePost";
 import { EditPostModal } from "@/components/Post/EditPostModal";
 import { Loader2 } from "lucide-react";
 import { useAuth, useCurrentUserId } from "@/hooks/auth/useAuth";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-export default function PostsPage() {
+// Выносим логику с useSearchParams в отдельный компонент
+function PostsContent() {
   const { user: currentUser } = useAuth();
   const [editingPost, setEditingPost] = useState<any>(null);
   const currentUserId = useCurrentUserId();
@@ -189,7 +190,9 @@ export default function PostsPage() {
           </p>
         </div>
 
-        <div className="space-y-4">
+        <CreatePost />
+
+        <div className="space-y-4 mt-6">
           {posts && posts.length > 0 ? (
             posts.map((post) => (
               <PostCard
@@ -221,5 +224,23 @@ export default function PostsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+// Основной компонент страницы с Suspense
+export default function PostsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-2xl mx-auto px-4">
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+            <span className="ml-2 text-gray-600">Загрузка...</span>
+          </div>
+        </div>
+      </div>
+    }>
+      <PostsContent />
+    </Suspense>
   );
 }
