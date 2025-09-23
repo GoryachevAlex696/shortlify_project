@@ -22,6 +22,11 @@ docker compose up --build
 http://localhost:3000
 ```
 
+4. Frontend приложение доступно на:
+```
+http://localhost:3001
+```
+
 ---
 
 ## Работа с контейнерами
@@ -51,7 +56,7 @@ docker compose exec app ./bin/rails c
 - Rails запускается с пользователем `app`.  
 - Образ можно загрузить на Docker Hub:
 ```bash
-docker tag shortlify-app goryachevalex969/shortlify_project:v1.0
-docker push goryachevalex969/shortlify_project:v1.0
+docker tag shortlify-app goryachevalex969/shortlify_project:v1.2
+docker push goryachevalex969/shortlify_project:v1.2
 ```
 
