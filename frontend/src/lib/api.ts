@@ -5,7 +5,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
 export const api = axios.create({
   baseURL: API_BASE,
-  timeout: 10000,
+  timeout: 30000,
   withCredentials: true, // Для куков
   headers: {
     'Content-Type': 'application/json',
