@@ -1,33 +1,35 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+// Всегда используем localhost для браузера, так как запросы идут от клиента
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
 export const api = axios.create({
   baseURL: API_BASE,
   timeout: 30000,
-  withCredentials: true, // Для куков
+  withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 export const getImageUrl = (url: string | undefined): string => {
-  if (!url) return '';
-  if (url.startsWith('http')) return url;
-  
-  if (url.startsWith('/api/v1/')) {
-    return `${BASE_URL}${url.replace('/api/v1/', '/')}`;
+  if (!url) return "";
+  if (url.startsWith("http")) return url;
+
+  if (url.startsWith("/api/v1/")) {
+    return `${BASE_URL}${url.replace("/api/v1/", "/")}`;
   }
-  
+
   return `${BASE_URL}${url}`;
 };
 
 // Request interceptor - добавляет токен
 api.interceptors.request.use(
   (config) => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('authToken');
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("authToken");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -44,8 +46,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('authToken');
-      window.location.href = '/login';
+      localStorage.removeItem("authToken");
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }
@@ -60,7 +62,7 @@ export interface LoginCredentials {
 export interface RegisterData {
   email: string;
   password: string;
-  password_confirmation: string; 
+  password_confirmation: string;
   username: string;
   name: string;
 }
@@ -79,7 +81,10 @@ export interface AuthResponse {
 }
 
 export interface Post {
-  authorId: string | { id: string; username: string; name: string; avatar_url?: string; } | undefined;
+  authorId:
+    | string
+    | { id: string; username: string; name: string; avatar_url?: string }
+    | undefined;
   id: string;
   text: string;
   image_url?: string;
@@ -132,77 +137,82 @@ const unwrapData = <T>(response: { data: T }): T => {
 
 // API методы
 export const authAPI = {
-  login: async (credentials: { user: { email?: string; username?: string; password: string } }): Promise<AuthResponse> => {
-    const response = await api.post('/login', credentials);
+  login: async (credentials: {
+    user: { email?: string; username?: string; password: string };
+  }): Promise<AuthResponse> => {
+    const response = await api.post("/login", credentials);
     return unwrapData(response);
   },
 
   register: async (userData: RegisterData): Promise<AuthResponse> => {
-    const response = await api.post('/signup', { user: userData });
+    const response = await api.post("/signup", { user: userData });
     return unwrapData(response);
   },
 
   logout: async (): Promise<void> => {
-    await api.delete('/logout');
-    localStorage.removeItem('authToken');
+    await api.delete("/logout");
+    localStorage.removeItem("authToken");
   },
 
   getCurrentUser: async (): Promise<User> => {
-    const response = await api.get('/auth/me');
+    const response = await api.get("/auth/me");
     return unwrapData(response);
-  }
+  },
 };
 
 export const postsAPI = {
   getFeedPosts: async (): Promise<Post[]> => {
-    const response = await api.get('/posts');
+    const response = await api.get("/posts");
     return unwrapData(response);
   },
 
   getPosts: async (): Promise<Post[]> => {
-    const response = await api.get('/posts');
+    const response = await api.get("/posts");
     return unwrapData(response);
   },
-  
+
   getPost: async (id: string): Promise<Post> => {
     const response = await api.get(`/posts/${id}`);
     return unwrapData(response);
   },
-  
+
   createPost: async (postData: CreatePostData): Promise<Post> => {
     const formData = new FormData();
-    formData.append('text', postData.text);
-    
+    formData.append("text", postData.text);
+
     if (postData.image) {
-      formData.append('image', postData.image);
+      formData.append("image", postData.image);
     }
 
-    const response = await api.post('/posts', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+    const response = await api.post("/posts", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
     return unwrapData(response);
   },
- 
-  updatePost: async (id: string, postData: { text: string; image?: File | null }): Promise<Post> => {
+
+  updatePost: async (
+    id: string,
+    postData: { text: string; image?: File | null }
+  ): Promise<Post> => {
     // проверка если есть файл изображения
     if (postData.image instanceof File) {
       const formData = new FormData();
-      formData.append('text', postData.text);
-      formData.append('image', postData.image);
-      
+      formData.append("text", postData.text);
+      formData.append("image", postData.image);
+
       const response = await api.put(`/posts/${id}`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { "Content-Type": "multipart/form-data" },
       });
       return unwrapData(response);
-    } 
-    
+    }
+
     // текстовое обновление
-    const response = await api.put(`/posts/${id}`, { 
-      text: postData.text 
+    const response = await api.put(`/posts/${id}`, {
+      text: postData.text,
     });
     return unwrapData(response);
   },
-  
+
   deletePost: async (id: string): Promise<void> => {
     await api.delete(`/posts/${id}`);
   },
@@ -210,7 +220,7 @@ export const postsAPI = {
   getUserPosts: async (userId: string): Promise<Post[]> => {
     const response = await api.get(`/users/${userId}/posts`);
     return unwrapData(response);
-  }
+  },
 };
 
 export const usersAPI = {
@@ -218,56 +228,64 @@ export const usersAPI = {
     const response = await api.get(`/users/${id}`);
     return unwrapData(response);
   },
-  
+
   getCurrentUser: async (): Promise<UserProfile> => {
-    const response = await api.get('/users/me');
+    const response = await api.get("/users/me");
     return unwrapData(response);
   },
-  
+
   updateUser: async (id: string, userData: FormData): Promise<UserProfile> => {
     const response = await api.put(`/users/${id}/avatar`, userData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { "Content-Type": "multipart/form-data" },
     });
     return unwrapData(response);
   },
 
   removeUser: async (id: string): Promise<UserProfile> => {
-  try {
-    console.log("Deleting user with ID:", id);
-    const response = await api.delete(`/users/${id}`);
-    console.log("Delete response:", response.status);
-    return unwrapData(response);
-  } catch (error) {
-    console.error("Delete user error:", error);
-    throw error;
-  }
-},
-  
+    try {
+      console.log("Deleting user with ID:", id);
+      const response = await api.delete(`/users/${id}`);
+      console.log("Delete response:", response.status);
+      return unwrapData(response);
+    } catch (error) {
+      console.error("Delete user error:", error);
+      throw error;
+    }
+  },
+
   removeAvatar: async (id: string): Promise<{ message: string }> => {
     const response = await api.delete(`/users/${id}/avatar`);
     return unwrapData(response);
   },
-  
-  searchUsers: async (query: string): Promise<UserProfile[]> => {
-    const response = await api.get(`/users/search?q=${encodeURIComponent(query)}`);
+
+  searchUsers: async (
+    query: string,
+    options: { signal?: AbortSignal } = {}
+  ): Promise<UserProfile[]> => {
+    const response = await api.get(
+      `/users/search?q=${encodeURIComponent(query)}`,
+      {
+        signal: options.signal,
+      }
+    );
     return unwrapData(response);
   },
-  
+
   followUser: async (id: string): Promise<UserProfile> => {
     const response = await api.post(`/users/${id}/follow`);
     return unwrapData(response);
   },
-  
+
   unfollowUser: async (id: string): Promise<UserProfile> => {
     const response = await api.delete(`/users/${id}/unfollow`);
-    return unwrapData(response); 
+    return unwrapData(response);
   },
-  
+
   getFollowers: async (id: string): Promise<FollowInfo[]> => {
     const response = await api.get(`/users/${id}/followers`);
     return unwrapData(response);
   },
-  
+
   getFollowing: async (id: string): Promise<FollowInfo[]> => {
     const response = await api.get(`/users/${id}/following`);
     return unwrapData(response);
@@ -277,15 +295,15 @@ export const usersAPI = {
 // Вспомогательные функции
 export const setAuthToken = (token: string | null) => {
   if (token) {
-    localStorage.setItem('authToken', token);
+    localStorage.setItem("authToken", token);
   } else {
-    localStorage.removeItem('authToken');
+    localStorage.removeItem("authToken");
   }
 };
 
 export const getAuthToken = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('authToken');
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("authToken");
   }
   return null;
 };
@@ -298,46 +316,50 @@ export const getImageWithAuth = async (imageUrl: string): Promise<string> => {
   try {
     // Очищаем URL от лишних параметров timestamp
     let cleanUrl = imageUrl;
-    if (cleanUrl.includes('?t=')) {
-      cleanUrl = cleanUrl.split('?t=')[0];
+    if (cleanUrl.includes("?t=")) {
+      cleanUrl = cleanUrl.split("?t=")[0];
     }
 
     // Если URL относительный, добавляем базовый URL Rails-сервера
     let fullUrl = cleanUrl;
-    if (cleanUrl.startsWith('/')) {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:3000';
+    if (cleanUrl.startsWith("/")) {
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") ||
+        "http://localhost:3000";
       fullUrl = `${baseUrl}${cleanUrl}`;
     }
 
-    console.log('Loading image from:', fullUrl);
+    console.log("Loading image from:", fullUrl);
 
-    const token = localStorage.getItem('authToken');
-    
+    const token = localStorage.getItem("authToken");
+
     const response = await fetch(fullUrl, {
       headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-        'Accept': 'image/*'
+        Authorization: token ? `Bearer ${token}` : "",
+        Accept: "image/*",
       },
       // credentials: 'include'
     });
-    
-    console.log('Image response status:', response.status);
-    
+
+    console.log("Image response status:", response.status);
+
     if (!response.ok) {
-      console.warn('Image not available via auth, using direct URL');
+      console.warn("Image not available via auth, using direct URL");
       return fullUrl; // Возвращаем полный URL
     }
-    
+
     const blob = await response.blob();
-    console.log('Image loaded successfully, size:', blob.size);
-    
+    console.log("Image loaded successfully, size:", blob.size);
+
     return URL.createObjectURL(blob);
   } catch (error) {
-    console.error('Error loading image with auth, using direct URL:', error);
+    console.error("Error loading image with auth, using direct URL:", error);
     // В случае ошибки возвращаем полный URL
-    const cleanUrl = imageUrl.split('?t=')[0];
-    if (cleanUrl.startsWith('/')) {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:3000';
+    const cleanUrl = imageUrl.split("?t=")[0];
+    if (cleanUrl.startsWith("/")) {
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") ||
+        "http://localhost:3000";
       return `${baseUrl}${cleanUrl}`;
     }
     return cleanUrl;

@@ -1,6 +1,10 @@
 services:
   db:
     image: mysql:8.0
+    command:
+      - --log-bin=mysql-bin
+      - --binlog-expire-logs-seconds=3600  # Удалять логи через 1 час
+      - --max-binlog-size=100M
     container_name: shortlify_db
     restart: always
     environment:
@@ -13,7 +17,8 @@ services:
     ports:
       - "3306:3306"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-ppassword"]
+      test:
+        ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-ppassword"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -49,12 +54,56 @@ services:
       - /app/.next
     environment:
       - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://localhost:3000/api/v1
+      - NEXT_PUBLIC_API_URL=http://localhost:3000/api/v1 # Используем имя сервиса
       - NEXT_PUBLIC_BASE_URL=http://localhost:3001
+      - NEXT_PUBLIC_CHAT_SERVER_URL=http://localhost:3002 # Для браузера используем localhost
+      - NEXT_PUBLIC_WS_URL=ws://localhost:3002
     depends_on:
       - backend
-    command: npm run dev -- --port 3000
+    command: npm run dev -- --port 3000 --hostname 0.0.0.0
+
+  redis:
+    image: redis:7-alpine
+    container_name: shortlify_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  chat-server:
+    build:
+      context: ./chat-server
+      dockerfile: Dockerfile
+    container_name: shortlify_chat_server
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - JWT_SECRET=f0c15ab30e4812b9c2d9a5a451ba4a306ad17ea60b684758ff3bcc558a6a4633d98ffa59fc71596f32cd092de904986f6a38ce43f566c71ae430e95f46e038ca
+      - REDIS_URL=redis://redis:6379
+      - FRONTEND_URL=http://localhost:3001
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - ./chat-server:/app
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
   db_data:
   bundle_cache:
+  redis_data:
