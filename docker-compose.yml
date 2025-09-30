@@ -40,6 +40,7 @@ services:
       DATABASE_URL: mysql2://shortlify:password@db:3306/shortlify_development
       BUNDLE_PATH: /usr/local/bundle
       BUNDLE_WITHOUT: ""
+      JWT_SECRET: f0c15ab30e4812b9c2d9a5a451ba4a306ad17ea60b684758ff3bcc558a6a4633d98ffa59fc71596f32cd092de904986f6a38ce43f566c71ae430e95f46e038ca
 
   frontend:
     build:
@@ -86,9 +87,10 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3002
-      - JWT_SECRET=f0c15ab30e4812b9c2d9a5a451ba4a306ad17ea60b684758ff3bcc558a6a4633d98ffa59fc71596f32cd092de904986f6a38ce43f566c71ae430e95f46e038ca
-      - REDIS_URL=redis://redis:6379
-      - FRONTEND_URL=http://localhost:3001
+      - JWT_SECRET=${JWT_SECRET}
+      - RAILS_SECRET_KEY_BASE=${RAILS_SECRET_KEY_BASE}
+      - REDIS_URL=${REDIS_URL}
+      - FRONTEND_URL=${FRONTEND_URL}
     depends_on:
       redis:
         condition: service_healthy

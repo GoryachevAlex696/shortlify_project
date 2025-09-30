@@ -20,13 +20,16 @@ const io = socketIo(server, {
   cors: {
     origin: [
       "http://localhost:3001",
+      "http://127.0.0.1:3001", // для Windows
       "http://localhost:3000",
+      "http://127.0.0.1:3000", // для Windows
       "http://frontend:3000",
-      "http://chat_server:3002",
+      "http://host.docker.internal:3001",
+      "http://host.docker.internal:3000",
     ],
-    methods: ["GET", "POST", "OPTIONS"],
+    methods: ["GET", "POST", "OPTIONS", "PUT", "DELETE"],
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   },
 });
 
@@ -47,22 +50,25 @@ app.use(
 app.options("*", cors());
 
 const PORT = process.env.PORT || 3002;
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+
+// Прочие секреты: основной JWT_SECRET и запасной RAILS_SECRET_KEY_BASE (для совместимости с Rails)
+const JWT_SECRET = process.env.JWT_SECRET || null;
+const RAILS_SECRET_KEY_BASE = process.env.RAILS_SECRET_KEY_BASE || null;
 
 const redisClient = redis.createClient({
   url: process.env.REDIS_URL || "redis://localhost:6379",
 });
 
 redisClient.on("error", (err) => {
-  console.log("Redis Client Error:", err.message);
+  // console.log("Redis Client Error:", err.message);
 });
 
 const connectRedis = async () => {
   try {
     await redisClient.connect();
-    console.log("Connected to Redis");
+    // console.log("Connected to Redis");
   } catch (err) {
-    console.log("Redis connection failed:", err.message);
+    // console.log("Redis connection failed:", err.message);
   }
 };
 
@@ -81,7 +87,7 @@ const saveMessage = async (roomId, message) => {
     await redisClient.lPush(key, JSON.stringify(message));
     await redisClient.lTrim(key, 0, 999);
   } catch (err) {
-    console.log("Error saving message:", err.message);
+    // console.log("Error saving message:", err.message);
   }
 };
 
@@ -132,23 +138,66 @@ const getMessages = async (roomId, currentUserId = null, limit = 100) => {
 
     return processedMessages;
   } catch (err) {
-    console.log("Error getting messages:", err.message);
+    // console.log("Error getting messages:", err.message);
     return [];
   }
 };
 
-// Нормализация авторизации сокета -> строки
+// ВСПОМОГАТЕЛЬ: пытается верифицировать токен по нескольким секретам.
+// Возвращает распарсенный payload или бросает ошибку.
+function verifyJwt(token) {
+  // Перечень кандидатных секретов в порядке приоритета
+  const candidates = [];
+  if (JWT_SECRET) candidates.push({ name: "JWT_SECRET", secret: JWT_SECRET });
+  if (RAILS_SECRET_KEY_BASE)
+    candidates.push({
+      name: "RAILS_SECRET_KEY_BASE",
+      secret: RAILS_SECRET_KEY_BASE,
+    });
+
+  // Если нет ни одного секрета — бросаем
+  if (candidates.length === 0) {
+    throw new Error("No JWT secret configured on server");
+  }
+
+  // Попробуем верифицировать токен по каждому из кандидатов
+  let lastError = null;
+  for (const c of candidates) {
+    try {
+      const decoded = jwt.verify(token, c.secret, { algorithms: ["HS256"] });
+      // console.log(`✅ JWT verified using ${c.name}`);
+      return { decoded, usedSecret: c.name };
+    } catch (err) {
+      lastError = err;
+      // console.warn(`🔑 JWT verification with ${c.name} failed:`, err.message);
+      // пробуем следующий секрет
+    }
+  }
+
+  // ничего не подошло
+  const message = lastError ? lastError.message : "Authentication error";
+  const err = new Error(message);
+  err.name = "JsonWebTokenError";
+  throw err;
+}
+
+// Normalize socket auth -> strings
 io.use((socket, next) => {
   try {
     const token = socket.handshake.auth.token;
-    if (!token) return next(new Error("Authentication error"));
+    if (!token) return next(new Error("Authentication error: token missing"));
 
-    const decoded = jwt.verify(token, JWT_SECRET);
-    socket.userId = String(decoded.user_id);
+    const { decoded } = verifyJwt(token);
+    // Поддерживаем оба варианта ключа в payload: user_id или user_id (Rails -> user_id)
+    socket.userId = String(decoded.user_id || decoded.userId || decoded.sub || "");
     socket.username = decoded.username ? String(decoded.username) : "";
+    if (!socket.userId) {
+      // console.warn("JWT decoded but user id not found in payload", decoded);
+      return next(new Error("Authentication error: user id missing"));
+    }
     next();
   } catch (err) {
-    console.log("JWT verification failed:", err.message);
+    // console.error("JWT verification failed in socket auth:", err.message);
     next(new Error("Authentication error"));
   }
 });
@@ -157,7 +206,7 @@ io.use((socket, next) => {
 const onlineUsers = new Map();
 
 io.on("connection", (socket) => {
-  console.log(`User ${socket.username} (${socket.userId}) connected`);
+  // console.log(`User ${socket.username} (${socket.userId}) connected`);
 
   // Хелпер: найти все сокеты по userId (строковое сравнение)
   function findSocketsByUserId(userId) {
@@ -185,7 +234,7 @@ io.on("connection", (socket) => {
         const num = val ? parseInt(val, 10) : 0;
         if (num > 0) unreadCounts[senderId] = num;
       } catch (e) {
-        console.error("getPersistentUnreadForUser error:", e);
+        // console.error("getPersistentUnreadForUser error:", e);
       }
     }
     return unreadCounts;
@@ -203,7 +252,7 @@ io.on("connection", (socket) => {
         const val = await redisClient.get(key);
         if (val !== null) lastMessages[senderId] = val;
       } catch (e) {
-        console.error("getPersistentLastMessagesForUser error:", e);
+        // console.error("getPersistentLastMessagesForUser error:", e);
       }
     }
     return lastMessages;
@@ -217,7 +266,7 @@ io.on("connection", (socket) => {
       const roomId = getRoomId(currentUserId, targetUserId);
 
       socket.join(roomId);
-      console.log(`User ${currentUserId} joined room ${roomId}`);
+      // console.log(`User ${currentUserId} joined room ${roomId}`);
 
       // Передаем currentUserId для правильной фильтрации
       const messages = await getMessages(roomId, currentUserId);
@@ -232,7 +281,7 @@ io.on("connection", (socket) => {
       try {
         await redisClient.del(unreadKey);
       } catch (e) {
-        console.error("Failed to clear unread key on join:", e);
+        // console.error("Failed to clear unread key on join:", e);
       }
 
       // После отметки как прочитанные, отправим обновлённые персистентные данные пользователю:
@@ -241,7 +290,7 @@ io.on("connection", (socket) => {
 
       socket.emit("unread_counts_updated", { unreadCounts, lastMessages });
     } catch (err) {
-      console.error("join_chat error:", err);
+      // console.error("join_chat error:", err);
     }
   });
 
@@ -324,13 +373,13 @@ io.on("connection", (socket) => {
             unreadCounts[other] = unread;
           }
         } catch (e) {
-          console.error("request_unread_counts room error:", e);
+          // console.error("request_unread_counts room error:", e);
         }
       }
 
       socket.emit("unread_counts_updated", { unreadCounts, lastMessages });
     } catch (err) {
-      console.error("request_unread_counts error:", err);
+      // console.error("request_unread_counts error:", err);
     }
   });
 
@@ -347,7 +396,7 @@ io.on("connection", (socket) => {
       // Очистить персистентный счётчик unread для этой пары
       const unreadKey = `chat:unread_count:${currentUserId}:${targetUserId}`;
       await redisClient.del(unreadKey).catch((e) => {
-        console.error("Failed to del unreadKey in mark_messages_as_read:", e);
+        // console.error("Failed to del unreadKey in mark_messages_as_read:", e);
       });
 
       // Пересчитаем персистентную карту и отправим обновление всем сокетам пользователя
@@ -363,7 +412,7 @@ io.on("connection", (socket) => {
         });
       });
     } catch (err) {
-      console.error("mark_messages_as_read error:", err);
+      // console.error("mark_messages_as_read error:", err);
     }
   });
 
@@ -402,7 +451,7 @@ io.on("connection", (socket) => {
         await redisClient.set(lastMsgKey, message.content || "");
         await redisClient.expire(lastMsgKey, 60 * 60 * 24 * 30);
       } catch (e) {
-        console.error("Redis unread/last_message update failed:", e);
+        // console.error("Redis unread/last_message update failed:", e);
       }
 
       // 3) Для получателя: обновляем запись списка чатов, где userId = id отправителя
@@ -430,7 +479,7 @@ io.on("connection", (socket) => {
             const lastMsgs = await getPersistentLastMessagesForUser(targetUserId);
             ts.emit("unread_counts_updated", { unreadCounts: unreadMap, lastMessages: lastMsgs });
           } catch (e) {
-            console.error("Failed to push persistent unread map to target socket:", e);
+            // console.error("Failed to push persistent unread map to target socket:", e);
           }
         })();
       });
@@ -450,7 +499,7 @@ io.on("connection", (socket) => {
       // 5) Подтверждение отправителю (оригинальный сокет)
       socket.emit("message_sent", message);
     } catch (err) {
-      console.error("send_message error:", err);
+      // console.error("send_message error:", err);
     }
   });
 
@@ -500,7 +549,7 @@ io.on("connection", (socket) => {
         io.to(roomId).emit("message_edited", payload);
       }
     } catch (err) {
-      console.error("edit_message error:", err);
+      // console.error("edit_message error:", err);
     }
   });
 
@@ -510,7 +559,7 @@ io.on("connection", (socket) => {
       const currentUserId = String(socket.userId);
       const roomId = getRoomId(currentUserId, String(targetUserId));
 
-      console.log(`🧹 Очистка истории: ${currentUserId} -> ${targetUserId}`);
+      // console.log(`🧹 Очистка истории: ${currentUserId} -> ${targetUserId}`);
 
       // 1. Устанавливаем метку очистки истории
       const clearedHistoryKey = `chat:${roomId}:cleared:${currentUserId}`;
@@ -526,7 +575,7 @@ io.on("connection", (socket) => {
         await redisClient.expire(lastMessageKey, 60 * 60 * 24 * 30);
         await redisClient.del(unreadKey);
       } catch (e) {
-        console.error("Error clearing persistent keys on clear_chat_history:", e);
+        // console.error("Error clearing persistent keys on clear_chat_history:", e);
       }
 
       socket.emit("chat_history_cleared");
@@ -556,9 +605,9 @@ io.on("connection", (socket) => {
         }
       });
 
-      console.log(`✅ История очищена, последнее сообщение сброшено`);
+      // console.log(`История очищена, последнее сообщение сброшено`);
     } catch (err) {
-      console.error("clear_chat_history error:", err);
+      // console.error("clear_chat_history error:", err);
     }
   });
 
@@ -608,7 +657,7 @@ io.on("connection", (socket) => {
         });
       }
     } catch (err) {
-      console.error("delete_message error:", err);
+      // console.error("delete_message error:", err);
     }
   });
 
@@ -658,7 +707,7 @@ io.on("connection", (socket) => {
         break;
       }
     }
-    console.log(`User ${socket.username} (${socket.userId}) disconnected`);
+    // console.log(`User ${socket.username} (${socket.userId}) disconnected`);
   });
 });
 
@@ -677,12 +726,33 @@ app.get("/health", async (req, res) => {
   }
 });
 
+// Вспомогательная функция для извлечения токена из заголовка Authorization
+function extractTokenFromHeader(req) {
+  const raw = req.headers.authorization || "";
+  if (!raw) return null;
+  const parts = raw.split(" ");
+  if (parts.length === 2 && parts[0].toLowerCase() === "bearer") return parts[1];
+  return null;
+}
+
 app.get("/api/messages/:targetUserId", async (req, res) => {
   try {
-    const token = req.headers.authorization?.replace("Bearer ", "");
+    const token = extractTokenFromHeader(req);
     if (!token) return res.status(401).json({ error: "Unauthorized" });
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const currentUserId = String(decoded.user_id);
+
+    // Пытаемся верифицировать токен любым доступным секретом
+    let decoded;
+    try {
+      decoded = verifyJwt(token).decoded;
+    } catch (e) {
+      // console.error("JWT verification error in /api/messages:", e.message);
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const currentUserId = String(decoded.user_id || decoded.userId || decoded.sub);
+
+    if (!currentUserId) return res.status(401).json({ error: "Unauthorized" });
+
     const roomId = getRoomId(currentUserId, String(req.params.targetUserId));
 
     // Передаем currentUserId для правильной фильтрации
@@ -695,11 +765,24 @@ app.get("/api/messages/:targetUserId", async (req, res) => {
 
 app.get("/api/unread-count", async (req, res) => {
   try {
-    const token = req.headers.authorization?.replace("Bearer ", "");
+    const token = extractTokenFromHeader(req);
     if (!token) return res.status(401).json({ error: "Токен не предоставлен" });
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const currentUserId = String(decoded.user_id);
 
+    // Пытаемся верифицировать токен любым доступным секретом
+    let decoded;
+    try {
+      const result = verifyJwt(token);
+      decoded = result.decoded;
+      // логирование: какой секрет сработал
+      // console.log("JWT verified for /api/unread-count using:", result.usedSecret);
+    } catch (e) {
+      // console.error("JWT verification error in /api/unread-count:", e.message);
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const currentUserId = String(decoded.user_id || decoded.userId || decoded.sub);
+
+    // Далее логика как раньше (с персистентными ключами и fallback'ом)
     // Попытка получить персистентные ключи
     const unreadCounts = await (async () => {
       const map = {};
@@ -713,7 +796,7 @@ app.get("/api/unread-count", async (req, res) => {
           const num = val ? parseInt(val, 10) : 0;
           if (num > 0) map[senderId] = num;
         } catch (e) {
-          console.error("Error reading unread key:", e);
+          // console.error("Error reading unread key:", e);
         }
       }
       return map;
@@ -731,7 +814,7 @@ app.get("/api/unread-count", async (req, res) => {
           const val = await redisClient.get(key);
           if (val !== null) map[senderId] = val;
         } catch (e) {
-          console.error("Error reading last_message key:", e);
+          // console.error("Error reading last_message key:", e);
         }
       }
       return map;
@@ -816,7 +899,7 @@ app.get("/api/unread-count", async (req, res) => {
         }
         if (unread > 0 && unreadCounts[other] === undefined) unreadCounts[other] = unread;
       } catch (e) {
-        console.error("Error processing unread key:", e);
+        // console.error("Error processing unread key:", e);
       }
     }
 
@@ -826,17 +909,25 @@ app.get("/api/unread-count", async (req, res) => {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Error in /api/unread-count:", error);
+    // console.error("Unexpected error in /api/unread-count:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
 app.post("/api/mark-as-read", async (req, res) => {
   try {
-    const token = req.headers.authorization?.replace("Bearer ", "");
+    const token = extractTokenFromHeader(req);
     if (!token) return res.status(401).json({ error: "Токен не предоставлен" });
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const currentUserId = String(decoded.user_id);
+
+    let decoded;
+    try {
+      decoded = verifyJwt(token).decoded;
+    } catch (e) {
+      // console.error("JWT verification error in /api/mark-as-read:", e.message);
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const currentUserId = String(decoded.user_id || decoded.userId || decoded.sub);
     const { targetUserId } = req.body;
     if (!targetUserId)
       return res.status(400).json({ error: "targetUserId обязателен" });
@@ -848,18 +939,18 @@ app.post("/api/mark-as-read", async (req, res) => {
     // Очистка персистентного счётчика unread для этой пары
     const unreadKey = `chat:unread_count:${currentUserId}:${targetUserId}`;
     await redisClient.del(unreadKey).catch((e) => {
-      console.error("Failed to del unreadKey in mark-as-read API:", e);
+      // console.error("Failed to del unreadKey in mark-as-read API:", e);
     });
 
     res.json({ success: true, roomId, timestamp: new Date().toISOString() });
   } catch (error) {
-    console.error("mark-as-read error:", error);
+    // console.error("mark-as-read error:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
 process.on("SIGTERM", async () => {
-  console.log("Received SIGTERM, shutting down gracefully");
+  // console.log("Received SIGTERM, shutting down gracefully");
   try {
     await redisClient.quit();
   } catch (e) {}
@@ -869,5 +960,8 @@ process.on("SIGTERM", async () => {
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Chat server running on port ${PORT}`);
+  // console.log(`Chat server running on port ${PORT}`);
+  // console.log("Using secrets:");
+  // console.log(" - JWT_SECRET set:", !!JWT_SECRET);
+  // console.log(" - RAILS_SECRET_KEY_BASE set:", !!RAILS_SECRET_KEY_BASE);
 });

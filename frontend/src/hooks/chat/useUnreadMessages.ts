@@ -36,7 +36,7 @@ export const useUnreadMessages = () => {
           setLoadingInitial(true);
         }
 
-        console.log("📡 Запрашиваю данные о непрочитанных сообщений...", {
+        console.log("Запрашиваю данные о непрочитанных сообщений...", {
           background,
         });
 
@@ -49,7 +49,7 @@ export const useUnreadMessages = () => {
         }
 
         const apiUrl = `${chatServerUrl}/api/unread-count`;
-        console.log("🌐 Full URL:", apiUrl);
+        console.log("Full URL:", apiUrl);
 
         const response = await fetch(apiUrl, {
           method: "GET",
@@ -59,19 +59,19 @@ export const useUnreadMessages = () => {
           },
         });
 
-        console.log("📊 Статус ответа:", response.status);
+        console.log("Статус ответа:", response.status);
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log("✅ Данные получены:", data);
+        console.log("Данные получены:", data);
 
         // Заменяем локальные данные authoritative данными с сервера
         if (data.unreadCounts) {
           setUnreadCounts(data.unreadCounts);
-          console.log("📊 Обновлены счетчики (replace):", data.unreadCounts);
+          console.log("Обновлены счетчики (replace):", data.unreadCounts);
         } else {
           // если сервер ничего не вернул — очищаем, чтобы не держать устаревшие значения
           setUnreadCounts({});
@@ -79,12 +79,12 @@ export const useUnreadMessages = () => {
 
         if (data.lastMessages) {
           setLastMessages(data.lastMessages);
-          console.log("💬 Обновлены последние сообщения (replace):", data.lastMessages);
+          console.log("Обновлены последние сообщения (replace):", data.lastMessages);
         } else {
           setLastMessages({});
         }
       } catch (err: any) {
-        console.error("❌ Ошибка загрузки непрочитанных:", err);
+        console.error("Ошибка загрузки непрочитанных:", err);
         setError(err?.message || "Ошибка загрузки непрочитанных");
       } finally {
         inFlightRef.current = false;
@@ -93,7 +93,7 @@ export const useUnreadMessages = () => {
         } else {
           setLoadingInitial(false);
         }
-        console.log("🏁 fetchUnreadData finished", { background });
+        console.log("fetchUnreadData finished", { background });
       }
     },
     []
@@ -163,7 +163,7 @@ export const useUnreadMessages = () => {
   }, []);
 
   const clearAllUnreadCounts = useCallback(() => {
-    console.log("🧹 Очищаю все непрочитанные сообщения");
+    console.log("Очищаю все непрочитанные сообщения");
     setUnreadCounts({});
   }, []);
   const loading = loadingInitial;
