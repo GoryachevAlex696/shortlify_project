@@ -35,13 +35,14 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    env_file:
-      - .env
     environment:
       RAILS_ENV: development
       DATABASE_URL: mysql2://shortlify:password@db:3306/shortlify_development
       BUNDLE_PATH: /usr/local/bundle
       BUNDLE_WITHOUT: ""
+      SECRET_KEY_BASE: "a432ed34761f82b6d1bed32300881498401e80c05d02efc9abbbb41e49549f77d20900aacf86799dd440de21a19ab8e234117ce798f62560340e6e25ac8a621c"
+      RAILS_SECRET_KEY_BASE: "a432ed34761f82b6d1bed32300881498401e80c05d02efc9abbbb41e49549f77d20900aacf86799dd440de21a19ab8e234117ce798f62560340e6e25ac8a621c"
+      JWT_SECRET: "a432ed34761f82b6d1bed32300881498401e80c05d02efc9abbbb41e49549f77d20900aacf86799dd440de21a19ab8e234117ce798f62560340e6e25ac8a621c"
       
 
   frontend:
@@ -86,11 +87,13 @@ services:
     container_name: shortlify_chat_server
     ports:
       - "3002:3002"
-    env_file:
-      - .env
     environment:
-      - NODE_ENV=production
-      - PORT=3002
+      NODE_ENV: "production"
+      PORT: "3002"
+      RAILS_SECRET_KEY_BASE: "a432ed34761f82b6d1bed32300881498401e80c05d02efc9abbbb41e49549f77d20900aacf86799dd440de21a19ab8e234117ce798f62560340e6e25ac8a621c"
+      JWT_SECRET: "a432ed34761f82b6d1bed32300881498401e80c05d02efc9abbbb41e49549f77d20900aacf86799dd440de21a19ab8e234117ce798f62560340e6e25ac8a621c"
+      REDIS_URL: "redis://redis:6379"
+      FRONTEND_URL: "http://localhost:3001"
     depends_on:
       redis:
         condition: service_healthy
@@ -104,6 +107,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+
 
 volumes:
   db_data:

@@ -45,7 +45,8 @@ export const useUnreadMessages = () => {
         const token = localStorage.getItem("authToken");
 
         if (!token) {
-          throw new Error("Токен авторизации не найден");
+          console.log("❌ Токен авторизации не найден, пропускаем fetchUnreadData");
+          return;
         }
 
         const apiUrl = `${chatServerUrl}/api/unread-count`;
