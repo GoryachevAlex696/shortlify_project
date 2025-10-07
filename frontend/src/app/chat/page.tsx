@@ -58,6 +58,10 @@ export default function ChatListPage() {
   // Чтобы не перегружать многократными fetch при быстрых сменах пользователей
   const avatarLoadingRef = useRef<Record<string, boolean>>({});
 
+  const unreadRef = useRef<Record<string, number>>({});
+  const unreadTsRef = useRef<Record<string, number>>({});
+  const processedMessageIdsRef = useRef<Set<string>>(new Set());
+
   // === ADDED: total unread (для глобального баннера) ===
   const totalUnread = Object.values(unreadCounts || {}).reduce(
     (acc, v) => acc + (typeof v === "number" ? v : Number(v || 0)),
@@ -69,6 +73,17 @@ export default function ChatListPage() {
   const pendingLastMsgRef = useRef<Record<string, string>>({});
   const batchTimerRef = useRef<number | null>(null);
 
+  // --- helper: безопасное add (через setUnreadCount) ---
+const addUnreadBatch = (userId: string, add: number) => {
+  try {
+    const cur = Number(getUnreadCount(userId) || 0);
+    setUnreadCount(userId, cur + add);
+  } catch (e) {
+    console.error("addUnreadBatch error:", e);
+  }
+};
+
+  // --- изменяем scheduleBatchFlush (использовать setUnreadCount разом) ---
   const scheduleBatchFlush = () => {
     if (batchTimerRef.current) return;
     batchTimerRef.current = window.setTimeout(() => {
@@ -78,16 +93,20 @@ export default function ChatListPage() {
       pendingLastMsgRef.current = {};
       batchTimerRef.current = null;
 
-      // применяем батч: сначала применим все increment'ы
+      // Применяем инкременты атомарно
       Object.entries(incs).forEach(([userId, count]) => {
         try {
-          for (let i = 0; i < count; i++) incrementUnreadCount(userId);
+          const cur = Number(unreadRef.current[userId] || 0);
+          const newVal = cur + Number(count || 0);
+          // обновляем локальную копию и глобальную (хук)
+          unreadRef.current[userId] = newVal;
+          setUnreadCount(userId, newVal);
         } catch (err) {
           console.error("Batch increment error:", err);
         }
       });
 
-      // затем обновим последние сообщения
+      // Обновляем последние сообщения (одно присвоение)
       Object.entries(lastMsgs).forEach(([userId, msg]) => {
         try {
           setLastMessage(userId, msg);
@@ -95,8 +114,9 @@ export default function ChatListPage() {
           console.error("Batch setLastMessage error:", err);
         }
       });
-    }, 200); // 200ms батч
+    }, 200);
   };
+
 
   // функция для загрузки пользователей (без изменений логики, немного формат)
   const loadUsers = async () => {
@@ -153,20 +173,11 @@ export default function ChatListPage() {
 
     const cleanUrl = avatarUrl.trim();
 
-    if (cleanUrl.startsWith("http://") || cleanUrl.startsWith("https://")) {
-      return cleanUrl;
-    }
-
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
-    if (cleanUrl.includes("/rails/active_storage/blobs/")) {
-      const blobMatch = cleanUrl.match(
-        /blobs\/(redirect|proxy)\/([^/]+)\/(.+)/
-      );
-      if (blobMatch) {
-        const directUrl = `${baseUrl}/rails/active_storage/blobs/redirect/${blobMatch[2]}/${blobMatch[3]}`;
-        return directUrl;
-      }
+    if (cleanUrl.startsWith("/rails/active_storage") || cleanUrl.includes("/rails/active_storage/blobs/")) {
+      // уже относительный путь — делаем абсолютным
+      return `${baseUrl}${cleanUrl.startsWith("/") ? "" : "/"}${cleanUrl}`;
     }
 
     let relativeUrl = cleanUrl;
@@ -177,6 +188,13 @@ export default function ChatListPage() {
     const fullUrl = `${baseUrl}${relativeUrl}`;
     return fullUrl;
   };
+
+  // Синхронизируем ref с хранилищем хука (при изменении unreadCounts)
+  useEffect(() => {
+    if (unreadCounts) {
+      unreadRef.current = { ...unreadCounts } as Record<string, number>;
+    }
+  }, [unreadCounts]);
 
   // ----------------------------
   // Загрузка/кеширование аватарок при изменении списка пользователей
@@ -306,23 +324,78 @@ export default function ChatListPage() {
 
     newSocket.on("connect", () => {
       setSocket(newSocket);
-    });
+    });    
+
+    newSocket.on(
+      "new_unread_message",
+      (data: { senderId: string; message: string; messageId?: string; timestamp?: string }) => {
+        if (!data.senderId) return;
+        if (data.senderId === currentUserId) return;
+
+        const uid = String(data.senderId);
+        // если сервер даёт messageId — используй его, иначе fallback на uid+timestamp
+        const msgId = data.messageId ?? `${uid}:${data.timestamp ?? Date.now()}`;
+
+        // дедуп — если уже обработано, игнорируем
+        if (processedMessageIdsRef.current.has(msgId)) {
+          console.debug("Duplicate new_unread_message ignored", msgId);
+          return;
+        }
+        // помечаем как обработанное (TTL через минуту)
+        processedMessageIdsRef.current.add(msgId);
+        setTimeout(() => processedMessageIdsRef.current.delete(msgId), 60_000);
+
+        try {
+          const cur = Number(unreadRef.current[uid] || 0);
+          const newVal = cur + 1;
+          unreadRef.current[uid] = newVal;
+          setUnreadCount(uid, newVal);
+          setLastMessage(uid, data.message || "");
+        } catch (err) {
+          console.error("new_unread_message handler error:", err);
+        }
+
+        pendingLastMsgRef.current[uid] = data.message || "";
+      }
+    );
 
     newSocket.on(
       "chat_list_update",
       (data: {
-        senderId: string;
+        senderId?: string;
         userId: string;
-        lastMessage: string;
-        timestamp: string;
+        lastMessage?: string;
+        timestamp?: string;
         unreadCount?: number;
       }) => {
+        const uid = String(data.userId);
         if (data.lastMessage !== undefined) {
-          setLastMessage(data.userId, data.lastMessage);
+          setLastMessage(uid, data.lastMessage);
         }
+        console.debug("socket chat_list_update incoming", { uid: data.userId, unreadCount: data.unreadCount, timestamp: data.timestamp });
 
-        if (data.unreadCount !== undefined) {
-          setUnreadCount(data.userId, data.unreadCount);
+        if (typeof data.unreadCount === "number") {
+          const incoming = Number(data.unreadCount);
+          const cur = Number(unreadRef.current[uid] || 0);
+
+          // если есть timestamp, можно сравнить:
+          if (data.timestamp) {
+            const incomingTs = Date.parse(data.timestamp) || 0;
+            const curTs = unreadTsRef.current[uid] || 0;
+            if (incomingTs >= curTs) {
+              unreadTsRef.current[uid] = incomingTs;
+              const toSet = Math.max(cur, incoming);
+              unreadRef.current[uid] = toSet;
+              setUnreadCount(uid, toSet);
+            } else {
+              // опоздавшее событие — игнорируем
+            }
+          } else {
+            // без timestamp — применяем max (не даём откатиться)
+            const toSet = Math.max(cur, incoming);
+            unreadRef.current[uid] = toSet;
+            setUnreadCount(uid, toSet);
+          }
         }
       }
     );
@@ -331,24 +404,17 @@ export default function ChatListPage() {
       "unread_counts_updated",
       (data: { unreadCounts: Record<string, number> }) => {
         Object.entries(data.unreadCounts).forEach(([userId, count]) => {
-          setUnreadCount(userId, count);
+          const uid = String(userId);
+          const incoming = Number(count || 0);
+          const cur = Number(unreadRef.current[uid] || 0);
+          const toSet = Math.max(cur, incoming);
+          unreadRef.current[uid] = toSet;
+          setUnreadCount(uid, toSet);
         });
       }
     );
 
-    newSocket.on(
-      "new_unread_message",
-      (data: { senderId: string; message: string; timestamp: string }) => {
-        if (!data.senderId) return;
-        if (data.senderId === currentUserId) return;
 
-        pendingIncrementsRef.current[data.senderId] =
-          (pendingIncrementsRef.current[data.senderId] || 0) + 1;
-        pendingLastMsgRef.current[data.senderId] = data.message || "";
-
-        scheduleBatchFlush();
-      }
-    );
 
     newSocket.on(
       "messages_read",
@@ -501,7 +567,7 @@ export default function ChatListPage() {
                 className="flex items-center space-x-4 p-4 rounded-xl hover:bg-gray-50 transition-all duration-200 border border-gray-100 shadow-sm hover:shadow-md group relative"
               >
                 {unreadCount > 0 && (
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium z-10">
+                  <div className="absolute -top11 -right-2 w-6 h-6 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium z-10">
                     {unreadCount > 99 ? "99+" : unreadCount}
                   </div>
                 )}
