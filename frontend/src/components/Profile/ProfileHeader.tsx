@@ -57,59 +57,139 @@ export function ProfileHeader({
   }, [isSettingsOpen]);
 
   useEffect(() => {
+    let cancelled = false;
+    let currentObjectUrl: string | null = null;
+
+    const revokeIfBlob = (url?: string | null) => {
+      if (url && url.startsWith('blob:')) {
+        try { URL.revokeObjectURL(url); } catch (e) { /* ignore */ }
+      }
+    };
+
     const loadImage = async () => {
       if (!profileData.avatarUrl) {
-        setIsLoading(false);
-        setImageUrl(null);
+        if (!cancelled) {
+          setIsLoading(false);
+          setImageUrl(null);
+          setImageError(false);
+        }
         return;
       }
 
       try {
         setIsLoading(true);
         setImageError(false);
-        
-        // Очищаем URL от лишних параметров
+
+        // Очистка таймстампов/параметров (если нужно)
         let cleanAvatarUrl = profileData.avatarUrl;
         if (cleanAvatarUrl.includes('?t=')) {
           cleanAvatarUrl = cleanAvatarUrl.split('?t=')[0];
         }
 
-        console.log('Loading avatar:', cleanAvatarUrl);
-        
-        // загрузка с авторизацией
-        const url = await getImageWithAuth(cleanAvatarUrl);
-        setImageUrl(url);
-        
-      } catch (error) {
-        console.error('Failed to load avatar via auth fetch:', error, 'avatarUrl:', profileData.avatarUrl);
-        setImageError(true);
-        
-        // Fallback: пробуем загрузить напрямую
-        try {
-          const cleanUrl = profileData.avatarUrl.split('?t=')[0];
-          const response = await fetch(cleanUrl);
-          if (response.ok) {
-            const blob = await response.blob();
-            setImageUrl(URL.createObjectURL(blob));
-            setImageError(false);
+        console.log('Loading avatar (clean):', cleanAvatarUrl);
+
+        // getImageWithAuth может вернуть:
+        // - blob:<...> (уже готовый object URL),
+        // - data:<...> (data URL),
+        // - http(s) URL (в этом случае мы должны fetch + createObjectURL),
+        // - или бросить исключение.
+        const maybeUrl = await getImageWithAuth(cleanAvatarUrl);
+
+        if (cancelled) {
+          // если компонент размонтирован, ничего не делаем
+          revokeIfBlob(maybeUrl);
+          return;
+        }
+
+        // Если getImageWithAuth сам вернул blob: или data:, используем сразу
+        if (typeof maybeUrl === 'string' && (maybeUrl.startsWith('blob:') || maybeUrl.startsWith('data:'))) {
+          // revoke старый objectURL и назначить новый
+          revokeIfBlob(imageUrl);
+          currentObjectUrl = maybeUrl;
+          setImageUrl(maybeUrl);
+          setImageError(false);
+          return;
+        }
+
+        // Если вернулась http(s) ссылка — делаем fetch с credentials (вдруг защищено cookie)
+        if (typeof maybeUrl === 'string' && (maybeUrl.startsWith('http://') || maybeUrl.startsWith('https://'))) {
+          try {
+            const resp = await fetch(maybeUrl, {
+              credentials: 'include', // если аутентификация по cookie
+              // если у вас токенный механизм (Bearer), то getImageWithAuth мог вернуть URL,
+              // но в этом случае fetch не поможет — лучше вернуть blob из getImageWithAuth.
+            });
+
+            if (!resp.ok) {
+              throw new Error(`fetch returned ${resp.status}`);
+            }
+
+            const blob = await resp.blob();
+            // revoke предыдущий blob, если был
+            revokeIfBlob(imageUrl);
+
+            currentObjectUrl = URL.createObjectURL(blob);
+            if (!cancelled) {
+              setImageUrl(currentObjectUrl);
+              setImageError(false);
+            } else {
+              // сразу освобождаем если уже отменено
+              URL.revokeObjectURL(currentObjectUrl);
+            }
+            return;
+          } catch (fetchErr) {
+            console.error('fetch of http(s) url failed:', fetchErr, 'url:', maybeUrl);
+            // и fallthrough к попытке прямого fetch от исходного profileData.avatarUrl ниже
           }
-        } catch (fallbackError) {
-          console.error('Fallback loading also failed:', fallbackError);
+        }
+
+        // Если getImageWithAuth вернул что-то неожиданное или упал, делаем fallback: пытаемся fetch по исходной ссылке
+        try {
+          const fallbackUrl = profileData.avatarUrl.split('?t=')[0];
+          const resp2 = await fetch(fallbackUrl, { credentials: 'include' });
+          if (resp2.ok) {
+            const blob2 = await resp2.blob();
+            revokeIfBlob(imageUrl);
+            currentObjectUrl = URL.createObjectURL(blob2);
+            if (!cancelled) {
+              setImageUrl(currentObjectUrl);
+              setImageError(false);
+              return;
+            } else {
+              URL.revokeObjectURL(currentObjectUrl);
+            }
+          } else {
+            throw new Error(`fallback fetch returned ${resp2.status}`);
+          }
+        } catch (fallbackErr) {
+          console.error('Fallback fetch failed:', fallbackErr);
+          if (!cancelled) {
+            setImageError(true);
+            setImageUrl(null);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load avatar via getImageWithAuth:', err);
+        if (!cancelled) {
+          setImageError(true);
+          setImageUrl(null);
         }
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     };
 
     loadImage();
 
-    // Очистка
+    // cleanup
     return () => {
-      if (imageUrl && imageUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(imageUrl);
+      cancelled = true;
+      if (currentObjectUrl) {
+        try { URL.revokeObjectURL(currentObjectUrl); } catch (e) { }
       }
     };
   }, [profileData.avatarUrl]);
+
 
   const handleSettingsClick = () => {
     setIsSettingsOpen(!isSettingsOpen);
