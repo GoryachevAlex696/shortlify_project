@@ -28,7 +28,7 @@ gem "devise", "~> 4.9"
 gem "jwt"
 
 # Загрузка и работа с изображениями
-gem "mini_magick", "~> 4.11"
+gem "mini_magick", "~> 5.3"
 gem "ruby-vips", "~> 2.1"
 gem "active_storage_validations"
 
