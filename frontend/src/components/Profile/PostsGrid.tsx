@@ -1,7 +1,7 @@
 "use client";
 
-import { Post, getImageUrl, getImageWithAuth } from "@/lib/api";
-import { useState, useEffect, useRef } from "react";
+import { Post, getImageUrl } from "@/lib/api";
+import { useState, useRef } from "react";
 import { Edit, Trash2, MoreHorizontal, X, ImageIcon } from "lucide-react";
 import { EditPostModal } from "@/components/Post/EditPostModal";
 import { PlaceholderImage } from "@/components/Post/PlaceholderImage";
@@ -28,106 +28,52 @@ export function PostsGrid({
   const [showOptions, setShowOptions] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [postToEdit, setPostToEdit] = useState<Post | null>(null);
+  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
-  // imageMap: postId -> разрешённый URL изображения (string) или null (явно нет изображения)
-  const [imageMap, setImageMap] = useState<Record<string, string | null>>({});
-  // loadingRef: отслеживаем, какие посты сейчас загружаются, чтобы не делать дублирующие запросы
-  const loadingRef = useRef<Record<string, boolean>>({});
-  // createdBlobUrlsRef: набор blob: URL, которые мы создали, чтобы отозвать их при размонтировании
-  const createdBlobUrlsRef = useRef<Set<string>>(new Set());
+  // Функция для получения абсолютного URL изображения
+  const getAbsoluteImageUrl = (url: string | undefined): string => {
+    if (!url) {
+      console.log("URL is empty");
+      return "";
+    }
 
-  // Загружаем изображения для всех постов при изменении списка posts
-  useEffect(() => {
-    let mounted = true;
+    // Если URL уже абсолютный, возвращаем как есть
+    if (url.startsWith("http")) {
+      console.log("Absolute URL:", url);
+      return url;
+    }
 
-    const loadAll = async () => {
-      if (!posts || posts.length === 0) return;
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || "http://localhost:3000";
 
-      for (const p of posts) {
-        try {
-          if (!p || !p.id) continue;
-          const pid = String(p.id);
+    // Убедимся, что относительный URL начинается с /
+    const relativeUrl = url.startsWith("/") ? url : `/${url}`;
+    const absoluteUrl = `${baseUrl}${relativeUrl}`;
 
-          // Пропускаем, если уже загружено или уже идёт загрузка
-          if (imageMap[pid] !== undefined || loadingRef.current[pid]) continue;
-
-          loadingRef.current[pid] = true;
-
-          // Если у поста нет image_url, явно помечаем как null
-          if (!p.image_url) {
-            if (!mounted) break;
-            setImageMap((prev) => ({ ...prev, [pid]: null }));
-            loadingRef.current[pid] = false;
-            continue;
-          }
-
-          try {
-            // Пытаемся получить изображение через getImageWithAuth (поддержка приватных изображений)
-            const resolved = await getImageWithAuth(p.image_url);
-            if (!mounted) {
-              // Если уже размонтированы — отзываем blob URL, если он создан
-              if (typeof resolved === "string" && resolved.startsWith("blob:")) {
-                try {
-                  URL.revokeObjectURL(resolved);
-                } catch {}
-              }
-              break;
-            }
-
-            if (typeof resolved === "string" && resolved.startsWith("blob:")) {
-              createdBlobUrlsRef.current.add(resolved);
-            }
-
-            setImageMap((prev) => ({ ...prev, [pid]: resolved }));
-          } catch (err) {
-            // При ошибке fallback на публичный URL
-            console.warn("Не удалось загрузить через getImageWithAuth, делаю fallback:", err);
-            const fallback = getImageUrl(p.image_url);
-            setImageMap((prev) => ({ ...prev, [pid]: fallback ?? null }));
-          } finally {
-            loadingRef.current[pid] = false;
-          }
-        } catch (outer) {
-          console.error("Ошибка при загрузке изображения поста:", outer);
-        }
-      }
-    };
-
-    loadAll();
-
-    return () => {
-      mounted = false;
-      // Отзываем все созданные blob URL при размонтировании
-      createdBlobUrlsRef.current.forEach((b) => {
-        try {
-          URL.revokeObjectURL(b);
-        } catch {}
-      });
-      createdBlobUrlsRef.current.clear();
-    };
-    // Зависимость — posts (imageMap не включаем, чтобы не зациклить)
-  }, [posts]);
-
-  // Очищаем записи imageMap для удалённых постов и отзываем blob для них
-  useEffect(() => {
-    const existing = new Set((posts || []).map((p) => String(p.id)));
-    setImageMap((prev) => {
-      const next: Record<string, string | null> = {};
-      Object.entries(prev).forEach(([k, v]) => {
-        if (existing.has(k)) next[k] = v;
-        else {
-          // Если пост удалён, отзываем blob url
-          if (v && v.startsWith("blob:")) {
-            try {
-              URL.revokeObjectURL(v);
-              createdBlobUrlsRef.current.delete(v);
-            } catch {}
-          }
-        }
-      });
-      return next;
+    console.log("Converted relative URL:", {
+      original: url,
+      baseUrl,
+      relativeUrl,
+      absoluteUrl
     });
-  }, [posts]);
+
+    return absoluteUrl;
+  };
+
+  // Обработчик ошибки загрузки изображения
+  const handleImageError = (postId: string, imageUrl: string) => {
+    console.error(`Image load error for post ${postId}:`, imageUrl);
+    setImageErrors(prev => new Set(prev).add(postId));
+  };
+
+  // Обработчик успешной загрузки изображения
+  const handleImageLoad = (postId: string, imageUrl: string) => {
+    console.log(`Image loaded successfully for post ${postId}:`, imageUrl);
+    setImageErrors(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(postId);
+      return newSet;
+    });
+  };
 
   if (!posts || posts.length === 0) {
     return (
@@ -136,6 +82,8 @@ export function PostsGrid({
   }
 
   const handlePostClick = (post: Post) => {
+    console.log("Post clicked:", post);
+    console.log("Post image_url:", post.image_url);
     setSelectedPost(post);
     setShowOptions(false);
   };
@@ -175,33 +123,28 @@ export function PostsGrid({
     }
   };
 
-  // Обработчик ошибки загрузки <img>: помечаем пост как не имеющий изображения и отзываем blob, если нужно
-  const handleImgOnError = (postId: string, src?: string) => {
-    if (src && src.startsWith("blob:")) {
-      try {
-        URL.revokeObjectURL(src);
-        createdBlobUrlsRef.current.delete(src);
-      } catch {}
-    }
-    setImageMap((prev) => ({ ...prev, [String(postId)]: null }));
-  };
-
   const isOwnPost = (post: Post) => {
     const authorId =
       typeof post.authorId === "string" ? post.authorId : post.authorId?.id;
     return authorId === currentUserId;
   };
 
+  console.log("Rendering PostsGrid with posts:", posts);
+  console.log("Image errors:", imageErrors);
+
   return (
     <>
       <div className="grid grid-cols-3 gap-4">
         {posts.map((post) => {
-          const pid = String(post.id);
-          // Сначала используем разрешённый auth-aware URL из imageMap;
-          // если он ещё не загружен — используем публичный fallback
-          const resolved = imageMap[pid];
-          const fallbackPublic = getImageUrl(post.image_url);
-          const imageUrlToUse = resolved === undefined ? fallbackPublic : resolved;
+          const postId = String(post.id);
+          const hasError = imageErrors.has(postId);
+          const imageUrl = post.image_url ? getAbsoluteImageUrl(post.image_url) : null;
+
+          console.log(`Post ${postId}:`, {
+            hasImage: !!post.image_url,
+            imageUrl,
+            hasError
+          });
 
           return (
             <div
@@ -209,12 +152,13 @@ export function PostsGrid({
               className="relative group cursor-pointer aspect-square"
               onClick={() => handlePostClick(post)}
             >
-              {imageUrlToUse ? (
+              {imageUrl && !hasError ? (
                 <img
-                  src={imageUrlToUse}
+                  src={imageUrl}
                   alt={`Post ${post.id}`}
                   className="w-full h-full object-cover rounded-lg"
-                  onError={(e) => handleImgOnError(pid, e.currentTarget.src)}
+                  onError={() => handleImageError(postId, imageUrl)}
+                  onLoad={() => handleImageLoad(postId, imageUrl)}
                 />
               ) : (
                 <PlaceholderImage className="w-full h-full rounded-lg" />
@@ -276,24 +220,34 @@ export function PostsGrid({
 
             <div className="md:w-2/3 flex items-center justify-center bg-gray-100 p-4">
               {(() => {
-                const pid = String(selectedPost.id);
-                const resolved = imageMap[pid];
-                const fallbackPublic = getImageUrl(selectedPost.image_url);
-                const url = resolved === undefined ? fallbackPublic : resolved;
-                if (!url) {
+                const postId = String(selectedPost.id);
+                const hasError = imageErrors.has(postId);
+                const imageUrl = selectedPost.image_url 
+                  ? getAbsoluteImageUrl(selectedPost.image_url) 
+                  : null;
+
+                console.log("Modal image for post", postId, {
+                  imageUrl,
+                  hasError,
+                  originalUrl: selectedPost.image_url
+                });
+
+                if (!imageUrl || hasError) {
                   return (
                     <div className="flex flex-col items-center justify-center w-full h-64 text-gray-400">
                       <ImageIcon className="w-16 h-16 mb-2" />
                       <p>Изображение не загружено</p>
+                      <p className="text-xs mt-2">URL: {selectedPost.image_url || 'нет'}</p>
                     </div>
                   );
                 }
                 return (
                   <img
-                    src={url}
+                    src={imageUrl}
                     alt={`Post ${selectedPost.id}`}
                     className="w-full h-auto max-h-[70vh] object-contain rounded-lg"
-                    onError={(e) => handleImgOnError(pid, e.currentTarget.src)}
+                    onError={() => handleImageError(postId, imageUrl)}
+                    onLoad={() => handleImageLoad(postId, imageUrl)}
                   />
                 );
               })()}
