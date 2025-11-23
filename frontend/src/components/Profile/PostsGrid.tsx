@@ -171,7 +171,7 @@ export function PostsGrid({
       {/* Модальное окно просмотра поста */}
       {selectedPost && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-gradient-to-b from-black/30 to-black/30 z-50 flex items-center justify-center p-4"
           onClick={handleCloseModal}
         >
           <div
