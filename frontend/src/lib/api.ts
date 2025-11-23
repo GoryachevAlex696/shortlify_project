@@ -338,7 +338,7 @@ export const getImageWithAuth = async (imageUrl: string): Promise<string> => {
         Authorization: token ? `Bearer ${token}` : "",
         Accept: "image/*",
       },
-      // credentials: 'include'
+      credentials: "include", // <<< ВАЖНО! добавляем сюда
     });
 
     console.log("Image response status:", response.status);
@@ -365,3 +365,4 @@ export const getImageWithAuth = async (imageUrl: string): Promise<string> => {
     return cleanUrl;
   }
 };
+
