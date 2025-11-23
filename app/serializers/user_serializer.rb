@@ -15,8 +15,12 @@ class UserSerializer < ActiveModel::Serializer
 
   def avatar_url
     return unless object.avatar.attached?
-    
-    # Возвращаем signed URL для Active Storage
-    Rails.application.routes.url_helpers.rails_blob_url(object.avatar, only_path: true)
+
+    Rails.application.routes.url_helpers.rails_blob_url(
+      object.avatar,
+      host: "http://localhost:3000"
+    )
   end
+
+
 end
