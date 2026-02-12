@@ -145,8 +145,13 @@ export const authAPI = {
   },
 
   register: async (userData: RegisterData): Promise<AuthResponse> => {
-    const response = await api.post("/signup", { user: userData });
-    return unwrapData(response);
+    try {
+      const response = await api.post("/signup", { user: userData });
+      return unwrapData(response);
+    } catch (error: any) {
+      // Пробрасываем ошибку дальше, в handleApiError для последующей обработки
+      throw error;
+    }
   },
 
   logout: async (): Promise<void> => {
