@@ -9,39 +9,44 @@ import { usePathname } from 'next/navigation';
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const { isSidebarOpen } = useSidebar();
   const currentUserId = useCurrentUserId();
-  const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
+    setIsClient(true);
   }, []);
 
-  // Список публичных (auth) роутов, где боковая панель показывать не нужно
   const publicRoutes = ['/login', '/register', '/forgot-password'];
   const isPublicRoute = pathname ? publicRoutes.includes(pathname) : false;
+  
+  // Показываем простой лоадер на сервере
+  if (!isClient) {
+    return (
+      <div className="flex h-screen bg-gray-50">
+        <main className="flex-1 flex items-center justify-center">
+          <div>Загрузка...</div>
+        </main>
+      </div>
+    );
+  }
+
+  if (isPublicRoute) {
+    return <>{children}</>;
+  }
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Sidebar: рендерим только после монтирования, когда есть userId, и если это не публичный роут */}
-      <div className={`${isSidebarOpen ? 'lg:block' : 'lg:block'}`}>
-        {isMounted && currentUserId && !isPublicRoute && (
-          <Sidebar isOpen={isSidebarOpen} />
-        )}
+      <div className={!currentUserId ? 'hidden' : ''}>
+        <Sidebar isOpen={isSidebarOpen} />
       </div>
       
-      {/* Main content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Mobile header - показываем только когда есть sidebar и не на публичном роуте */}
-        {isMounted && currentUserId && !isPublicRoute && (
-          <header className="lg:hidden bg-white border-b border-gray-200 p-4">
-            <div className="flex items-center justify-between">
-              <h1 className="text-xl font-semibold text-gray-900">Shortlify</h1>
-              <div className="w-6" />
-            </div>
-          </header>
-        )}
+        <header className="lg:hidden bg-white border-b border-gray-200 p-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-semibold text-gray-900">Shortlify</h1>
+          </div>
+        </header>
 
-        {/* Content */}
         <div className="flex-1 overflow-auto p-4 lg:p-6">
           {children}
         </div>
@@ -51,7 +56,5 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 }
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <LayoutContent>{children}</LayoutContent>
-  );
+  return <LayoutContent>{children}</LayoutContent>;
 }
