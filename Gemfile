@@ -29,7 +29,7 @@ gem "jwt"
 
 # Загрузка и работа с изображениями
 gem "mini_magick", "~> 4.11"
-gem "ruby-vips", "~> 2.1"
+gem "ruby-vips", "~> 2.2"
 gem "active_storage_validations"
 
 # Поиск
